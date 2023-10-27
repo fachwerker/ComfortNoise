@@ -1,5 +1,6 @@
 package com.example.comfortnoise
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -7,7 +8,9 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
 import android.util.AttributeSet
+import android.util.DisplayMetrics
 import android.view.View
+import java.util.Arrays
 
 class CanvasSpectogram @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -20,13 +23,18 @@ class CanvasSpectogram @JvmOverloads constructor(
     private val paint_ = Paint()
     private lateinit var mCanvas : Canvas
     val WS = 2048
-    val nX = 164
-    val colorsArray = Array(nX) {
+    val nX = width
+
+    val displayMetrics = DisplayMetrics()
+    private val colorsArray = Array(1074) { IntArray( WS )  }
+    private val colorsArrayCurrent = IntArray( WS )
+    /*private val colorsArray = Array(R.layout.activity_main.com) {
         IntArray(
             WS
         )
-    }
-    val colorPositions = Array(nX) { FloatArray( WS )  }
+    }*/
+    private val colorPositions = Array(1074) { FloatArray( WS )  }
+    private val colorPositionsCurrent = FloatArray( WS )
     //val colorsArray = IntArray(2048)
     //var colorPositions = FloatArray(2048)// FloatArray = Float.rangeTo(xHalf.toDouble())// 0f.. xHalf step xHalf/frame.size
 
@@ -35,45 +43,32 @@ class CanvasSpectogram @JvmOverloads constructor(
         if (canvas != null) {
             mCanvas  = canvas
         }
-        xHalf = width * 1.0f
-        yHalf = height * 1.0f
 
-
-        if (false)
-        {
-            val colorPositions = floatArrayOf(0.6f, 0.7f, 0.85f, 1f)
-    //        val colorsArray = IntArray(colorPositions.size)
-    //        for (idx in 0 until  colorPositions.size) {
-    //            colorsArray[idx] = getColor(colorPositions[idx])
-    //        }
-            //val colorsArray = intArrayOf(getColor(colorPositions))
-            /*for (colorsArray)
-                intArrayOf (getColor(colorPositions)*/
-
-            val colorsArray =
-                intArrayOf(
-                    Color.RED, Color.BLUE, Color.YELLOW,
-                    Color.parseColor("#FFA500")
-                )// orange color hex code
-
-
-            // pass appropriately the coordinates you want here
+        for (x in 0 until width-1) {
+            val xfloat = x.toFloat()
+            /*colorsArray[x] = colorsArray[x+1].copyOf()
+            colorPositions[x] = colorPositions[x+1].copyOf()*/
             paint_.shader = LinearGradient(
-                xHalf, 0f, xHalf, yHalf,
-                colorsArray,
-                colorPositions,// distribution of colors along the length of gradient.
+                xfloat, 0f, xfloat, height.toFloat(),
+                colorsArray[x],
+                colorPositions[x],// distribution of colors along the length of gradient.
                 Shader.TileMode.CLAMP
             )
-            //paint.shader = LinearGradient(xHalf, 0f, xHalf, yHalf, Color.RED, Color.BLUE, Shader.TileMode.MIRROR);
-            mCanvas?.drawLine(0f, 0f, 0f, yHalf, paint_)
-            for (x in 0 until xHalf.toInt()) {
-                //canvas?.drawLine(xHalf / 2f, 0f, xHalf / 2f, yHalf, paint)
-                //canvas?.drawLine(xHalf, 0f, xHalf, yHalf, paint)
-                mCanvas?.drawLine(x.toFloat(), 0f, x.toFloat(), yHalf, paint_)
-            }
+            mCanvas?.drawLine(xfloat, 0f, xfloat, height.toFloat(), paint_)
+
         }
 
-       for (x in 0 until nX) {
+        /*colorsArray[width-1] = colorsArrayCurrent.copyOf()
+        colorPositions[width-1] = colorPositionsCurrent.copyOf()*/
+        paint_.shader = LinearGradient(
+            width.toFloat(), 0f, width.toFloat(), height.toFloat(),
+            colorsArray[width-1],
+            colorPositions[width-1],// distribution of colors along the length of gradient.
+            Shader.TileMode.CLAMP
+        )
+        mCanvas?.drawLine(x.toFloat(), 0f, x.toFloat(), height.toFloat(), paint_)
+
+       /*for (x in 0 until width) {
             xCurrent = (xCurrent + 1) % width
             paint_.shader = LinearGradient(
                 xHalf, 0f, xHalf, yHalf,
@@ -83,39 +78,25 @@ class CanvasSpectogram @JvmOverloads constructor(
             )
             mCanvas?.drawLine(xCurrent, 0f, xCurrent, yHalf, paint_)
 
-        }
-
-
-        /*for ( x in 0 until nX) {
-            for (y in 0 until WS) {
-                paint_.color = colorsArray[x][y]
-                mCanvas.drawPoint(x.toFloat(), y.toFloat(), paint_)
-            }
         }*/
     }
 
-    fun drawSpectogram(frame: Array<DoubleArray>){
-        //var stepsize = (xHalf/frame.size)
-        //var positionArray = 0.. frame.size step 1
-        mCanvas?.drawLine(0f, 0f, 0f, yHalf, paint_)
-        for (x in 0 until nX) {
-            for (idx in frame.indices) {
-                colorPositions[x][idx] = (idx) * 1f / frame.size
-                colorsArray[x][idx] = getColor((1f - frame[x][idx].toFloat()))
-            }
+    fun drawSpectogram(frame: DoubleArray){
+        for (idx in frame.indices) {
+            colorPositionsCurrent[idx] = (idx) * 1f / frame.size
+            // if value is close to one --> high level --> color == 0 --> red
+            colorsArrayCurrent[idx] = getColor((1f - frame[idx].toFloat()))
         }
 
-        /*for (x in 0 until nX) {
-            xCurrent = (xCurrent + 1) % width
-            paint_.shader = LinearGradient(
-                xHalf, 0f, xHalf, yHalf,
-                colorsArray[x],
-                colorPositions[x],// distribution of colors along the length of gradient.
-                Shader.TileMode.CLAMP
-            )
-            mCanvas?.drawLine(xCurrent, 0f, xCurrent, yHalf, paint_)
 
-        }*/
+        for (x in 0 until width-1) {
+            val xfloat = x.toFloat()
+            colorsArray[x] = colorsArray[x+1].copyOf()
+            colorPositions[x] = colorPositions[x+1].copyOf()
+        }
+        colorsArray[width-1] = colorsArrayCurrent.copyOf()
+        colorPositions[width-1] = colorPositionsCurrent.copyOf()
+
         invalidate()
 
     }

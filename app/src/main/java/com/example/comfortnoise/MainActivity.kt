@@ -28,7 +28,8 @@ class MainActivity : AppCompatActivity() {
     var isPlaying: Boolean = false
     val Fs: Int = 44100
     //val buffLength: Int = AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
-    val buffLength: Int = Fs*1 // 5s
+    val noiseLength: Int = Fs*1 // 5s
+    val buffLength: Int = AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
 
 
     // fft
@@ -110,19 +111,31 @@ class MainActivity : AppCompatActivity() {
         // simple sine wave generator
         val frame_out: ShortArray = ShortArray(buffLength)
         val amplitude: Int = 32767
-        val frequency: Int = 440
+        val frequency: Int = 3000
         val twopi: Double = 8.0 * Math.atan(1.0)
         var phase: Double = 0.0
 
-        val sampleSize = buffLength // Anzahl der Rauschwerte
+        val sampleSize = noiseLength // Anzahl der Rauschwerte
         val minValue = 0 // Minimaler Wert des Rauschens
         val maxValue = amplitude // Maximaler Wert des Rauschens
 
         val random = Random() // Initialisiere den Zufallsgenerator mit einer Seed (kann angepasst werden)
 
         // Generiere das weiße Rauschen
-        val whiteNoise = List(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }
-        fftObj.printSpectrogram(whiteNoise, spectogramview)
+        val signal = DoubleArray(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }//(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }.toDoubleArray()
+        //val signal = DoubleArray(sampleSize) //List(sampleSize) { 0.0 }.toMutableList()
+
+        for (i in 0 until sampleSize) {
+            signal[i] = (amplitude * Math.sin(phase))
+            phase += twopi * (frequency) / Fs
+            if (phase > twopi) {
+                phase -= twopi
+            }
+        }
+        val plotData = fftObj.printSpectrogram(signal)
+
+        var idxNoise = 0;
+        var idxPlot = 0;
         while (isPlaying) {
             for (i in 0 until buffLength) {
                 /*frame_out[i] = (amplitude * Math.sin(phase)).toInt().toShort()
@@ -130,10 +143,14 @@ class MainActivity : AppCompatActivity() {
                 if (phase > twopi) {
                     phase -= twopi
                 }*/
-                frame_out[i] = whiteNoise[i].toInt().toShort()
+                frame_out[i] = signal[idxNoise%sampleSize].toInt().toShort()
+                idxNoise++
                 //frame_out[i] = whiteNoise[i]
             }
             Track.write(frame_out, 0, buffLength)
+
+            spectogramview.drawSpectogram(plotData[idxPlot%plotData.size])
+            idxPlot++
         }
     }
 
@@ -165,98 +182,4 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
-    private fun printSpectrogram()
-    {
-        /*try {
-
-            //get raw double array containing .WAV data
-            val audioTest = readWAV2Array(filepath, true)
-            val rawData: DoubleArray = audioTest.getByteArray()
-            val length = buffLength
-
-            //initialize parameters for FFT
-            val OF = 8 //OF = overlap factor
-            val windowStep = WS / OF
-
-            //calculate FFT parameters
-            val SR: Double = audioTest.getSR()
-            val time_resolution = WS / SR
-            val frequency_resolution = SR / WS
-            val highest_detectable_frequency = SR / 2.0
-            val lowest_detectable_frequency = 5.0 * SR / WS
-            println("time_resolution:              " + time_resolution * 1000 + " ms")
-            println("frequency_resolution:         $frequency_resolution Hz")
-            println("highest_detectable_frequency: $highest_detectable_frequency Hz")
-            println("lowest_detectable_frequency:  $lowest_detectable_frequency Hz")
-
-            //initialize plotData array
-            val nX = (length - WS) / windowStep
-            val plotData = Array(nX) {
-                DoubleArray(
-                    WS
-                )
-            }
-            val fftObj = FFT(WS)
-            //apply FFT and find MAX and MIN amplitudes
-            var maxAmp = Double.MIN_VALUE
-            var minAmp = Double.MAX_VALUE
-            var amp_square: Double
-            val inputImag = DoubleArray(length)
-            for (i in 0 until nX) {
-                Arrays.fill(inputImag, 0.0)
-                val WS_array = DoubleArray(length)
-                fftObj.fft(
-                    Arrays.copyOfRange(rawData, i * windowStep, i * windowStep + WS),
-                    WS_array
-                )
-                for (j in 0 until WS) {
-                    amp_square =
-                        WS_array[2 * j] * WS_array[2 * j] + WS_array[2 * j + 1] * WS_array[2 * j + 1]
-                    if (amp_square == 0.0) {
-                        plotData[i][j] = amp_square
-                    } else {
-                        plotData[i][j] = 10 * Math.log10(amp_square)
-                    }
-
-                    //find MAX and MIN amplitude
-                    if (plotData[i][j] > maxAmp) maxAmp =
-                        plotData[i][j] else if (plotData[i][j] < minAmp) minAmp =
-                        plotData[i][j]
-                }
-            }
-            println("---------------------------------------------------")
-            println("Maximum amplitude: $maxAmp")
-            println("Minimum amplitude: $minAmp")
-            println("---------------------------------------------------")
-
-            //Normalization
-            val diff = maxAmp - minAmp
-            for (i in 0 until nX) {
-                for (j in 0 until WS) {
-                    plotData[i][j] = (plotData[i][j] - minAmp) / diff
-                }
-            }
-
-            //plot image
-            val anImage: Image
-            val paint = Paint()
-            val theImage = BufferedImage(nX, WS, BufferedImage.TYPE_INT_RGB)
-            var ratio: Double
-            for (x in 0 until nX) {
-                for (y in 0 until WS) {
-                    ratio = plotData[x][y]
-
-                    //theImage.setRGB(x, y, new Color(red, green, 0).getRGB());
-                    val newColor: Color = getColor((1.0 - ratio).toInt())
-                    theImage.setRGB(x, y, newColor.getRGB())
-                }
-            }
-            val outputfile = File("saved.png")
-            ImageIO.write(theImage, "png", outputfile)
-        } catch (e: IOException) {
-            // TODO Auto-generated catch block
-            e.printStackTrace()
-        }*/
-    }
 }

@@ -30,12 +30,11 @@ class FFT(private val fftsize: Int, private val samplingrate: Double )  {
 
 
 
-    fun printSpectrogram(frame_out: List<Double>, spectogramview: CanvasSpectogram)
-    {
+    fun printSpectrogram(frame_out: DoubleArray): Array<DoubleArray> {
 
 
         //get raw double array containing .WAV data
-        val rawData: DoubleArray = frame_out.toDoubleArray()
+        val rawData: DoubleArray = frame_out
         val length = frame_out.size // this is actually the size of the whole array
 
         //initialize parameters for FFT
@@ -116,7 +115,7 @@ class FFT(private val fftsize: Int, private val samplingrate: Double )  {
                 val newColor: Color = getColor((1.0 - ratio).toInt())
                 theImage.setRGB(x, y, newColor.getRGB())
             }*/
-            spectogramview.drawSpectogram(plotData)
+        return plotData
         //
     }
 
