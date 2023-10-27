@@ -7,10 +7,12 @@
     tools:context=".MainActivity">
 
     <com.example.comfortnoise.CanvasSpectogram
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="168dp" />
+        android:id="@+id/myCanvas"
+        android:layout_width="409dp"
+        android:layout_height="406dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ToggleButton
         android:id="@+id/WhiteNoise"

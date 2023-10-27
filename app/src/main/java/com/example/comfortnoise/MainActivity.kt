@@ -3,20 +3,15 @@ package com.example.comfortnoise
 //import android.R
 
 import android.graphics.Color
-import android.graphics.Paint
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
-import android.media.Image
 import android.media.SoundPool
 import android.os.Bundle
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.toColor
 import com.example.comfortnoise.databinding.ActivityMainBinding
-import java.io.IOException
-import java.util.Arrays
 import java.util.Random
 
 class MainActivity : AppCompatActivity() {
@@ -38,20 +33,25 @@ class MainActivity : AppCompatActivity() {
 
     // fft
     val WS = 2048 //WS = window size
-    val fftObj = FFT(WS,Fs.toDouble()
-    )
+    lateinit var fftObj: FFT
+
+    // Canvas
+    private lateinit var spectogramview: CanvasSpectogram
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+
         //  init sound pool
         initSoundPool()
 
+
         streamID = soundPool!!.load(this, R.raw.white_noise, 1)
         binding = ActivityMainBinding.inflate(layoutInflater)
+        spectogramview = binding.myCanvas
+        fftObj = FFT(WS,Fs.toDouble())
         setContentView(binding.root)
-
         binding.WhiteNoise.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
             if (isChecked) {
                 compoundButton.setBackgroundColor(Color.GREEN)
@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
                 Thread {
                     initTrack()
                     startPlaying()
-                    playback()
+                    playback(spectogramview)
                 }.start()
             } else {
                 compoundButton.setBackgroundColor(Color.RED)
@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
-    private fun playback() {
+    private fun playback(spectogramview: CanvasSpectogram) {
         // simple sine wave generator
         val frame_out: ShortArray = ShortArray(buffLength)
         val amplitude: Int = 32767
@@ -122,7 +122,7 @@ class MainActivity : AppCompatActivity() {
 
         // Generiere das weiße Rauschen
         val whiteNoise = List(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }
-
+        fftObj.printSpectrogram(whiteNoise, spectogramview)
         while (isPlaying) {
             for (i in 0 until buffLength) {
                 /*frame_out[i] = (amplitude * Math.sin(phase)).toInt().toShort()

@@ -1,11 +1,8 @@
 package com.example.comfortnoise
 
-import android.annotation.SuppressLint
-import android.graphics.Color
-import android.graphics.Paint
 import java.util.Arrays
 
-class FFT(private val fftsize: Int, private val samplingrate: Double)  {
+class FFT(private val fftsize: Int, private val samplingrate: Double )  {
     private var windowsize_: Int = fftsize
     private var samplingrate_: Double = samplingrate.toDouble()
     var m: Int = 0
@@ -14,7 +11,6 @@ class FFT(private val fftsize: Int, private val samplingrate: Double)  {
     private lateinit var cos: DoubleArray
     private lateinit var sin: DoubleArray
 
-    private lateinit var spectogramview_:CanvasSpectogram
 
     init {
         var n = windowsize_
@@ -34,7 +30,7 @@ class FFT(private val fftsize: Int, private val samplingrate: Double)  {
 
 
 
-    private fun printSpectrogram(frame_out: List<Double>)
+    fun printSpectrogram(frame_out: List<Double>, spectogramview: CanvasSpectogram)
     {
 
 
@@ -80,16 +76,20 @@ class FFT(private val fftsize: Int, private val samplingrate: Double)  {
             for (j in 0 until WS) {
                 amp_square =
                     WS_array[2 * j] * WS_array[2 * j] + WS_array[2 * j + 1] * WS_array[2 * j + 1]
-                if (amp_square == 0.0) {
-                    plotData[i][j] = amp_square
-                } else {
-                    plotData[i][j] = 10 * Math.log10(amp_square)
-                }
+
+
+                // e.g. 80dB below your signal's spectrum peak amplitude
+                // select threshold based on the expected spectrum amplitudes
+                val threshold = 1.0
+                // limit values and convert to dB
+                var valueDb = 10 * Math.log10(Math.max(amp_square, threshold))
+                plotData[i][j] = valueDb
 
                 //find MAX and MIN amplitude
-                if (plotData[i][j] > maxAmp) maxAmp =
-                    plotData[i][j] else if (plotData[i][j] < minAmp) minAmp =
-                    plotData[i][j]
+                if (valueDb > maxAmp)
+                    maxAmp = valueDb
+                else if (valueDb < minAmp)
+                    minAmp = valueDb
             }
         }
         println("---------------------------------------------------")
@@ -106,9 +106,9 @@ class FFT(private val fftsize: Int, private val samplingrate: Double)  {
         }
 
         //plot image
-        val paint = Paint()
-        var ratio: Double
-        for (x in 0 until nX) {
+        //val paint = Paint()
+        //var ratio: Double
+        //for (x in 0 until nX) {
             /*for (y in 0 until WS) {
                 ratio = plotData[x][y]
 
@@ -116,8 +116,8 @@ class FFT(private val fftsize: Int, private val samplingrate: Double)  {
                 val newColor: Color = getColor((1.0 - ratio).toInt())
                 theImage.setRGB(x, y, newColor.getRGB())
             }*/
-            spectogramview_.drawSpectogram(plotData[x])
-        }
+            spectogramview.drawSpectogram(plotData)
+        //
     }
 
     fun fft(x: DoubleArray, y: DoubleArray) {
