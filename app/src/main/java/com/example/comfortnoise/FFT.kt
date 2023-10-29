@@ -55,9 +55,10 @@ class FFT(private val fftsize: Int, private val samplingrate: Double )  {
 
         //initialize plotData array
         val nX = (length - WS) / windowStep
+        val nY = WS/2 + 1
         val plotData = Array(nX) {
             DoubleArray(
-                WS
+                nY
             )
         }
         //apply FFT and find MAX and MIN amplitudes
@@ -72,7 +73,7 @@ class FFT(private val fftsize: Int, private val samplingrate: Double )  {
                 Arrays.copyOfRange(rawData, i * windowStep, i * windowStep + WS),
                 WS_array
             )
-            for (j in 0 until WS) {
+            for (j in 0 until nY) {
                 amp_square =
                     WS_array[2 * j] * WS_array[2 * j] + WS_array[2 * j + 1] * WS_array[2 * j + 1]
 
@@ -99,7 +100,7 @@ class FFT(private val fftsize: Int, private val samplingrate: Double )  {
         //Normalization
         val diff = maxAmp - minAmp
         for (i in 0 until nX) {
-            for (j in 0 until WS) {
+            for (j in 0 until nY) {
                 plotData[i][j] = (plotData[i][j] - minAmp) / diff
             }
         }
@@ -182,4 +183,47 @@ class FFT(private val fftsize: Int, private val samplingrate: Double )  {
             i++
         }
     }
+
+    /*fun fft(x: DoubleArray, y: DoubleArray) {
+        val n = x.size
+        if (n <= 1) return
+
+        var i = 0
+        var j = 0
+        while (i < n) {
+            if (i < j) {
+                val tempX = x[i]
+                val tempY = y[i]
+                x[i] = x[j]
+                y[i] = y[j]
+                x[j] = tempX
+                y[j] = tempY
+            }
+
+            var k = n / 2
+            while (k <= j) {
+                j -= k
+                k /= 2
+            }
+            j += k
+            i++
+        }
+
+        var m = 1
+        while (m < n) {
+            val m2 = m * 2
+            for (i in 0 until m) {
+                val omega = m * cos[i]
+                val s = sin[i]
+                for (j in i until n step m2) {
+                    val t = x[j + m] * omega - y[j + m] * s
+                    x[j + m] = x[j] - t
+                    y[j + m] = y[j] + t
+                    x[j] += t
+                    y[j] -= t
+                }
+            }
+            m = m2
+        }
+    }*/
 }
