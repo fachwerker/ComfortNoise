@@ -56,19 +56,17 @@ class CanvasSpectogram @JvmOverloads constructor(
     }
 
     fun drawSpectogram(frame: DoubleArray){
-
         shiftColorsArrayOneIndexLeft()
         updateCurrentColor(frame)
         invalidate()
-
     }
+
     private fun shiftColorsArrayOneIndexLeft() {
         for (x in 0 until width - 1) {
             val xfloat = x.toFloat()
             colorsArray[x] = colorsArray[x + 1].copyOf()
         }
     }
-
 
     private fun updateCurrentColor(frame: DoubleArray) {
         for (idx in frame.indices) {
