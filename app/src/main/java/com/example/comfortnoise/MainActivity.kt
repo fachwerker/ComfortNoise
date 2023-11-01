@@ -11,7 +11,7 @@ import android.media.SoundPool
 import android.os.Bundle
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
-import be.tarsos.dsp.filters.BandPass
+//import be.tarsos.dsp.filters.BandPass
 import com.example.comfortnoise.databinding.ActivityMainBinding
 import java.util.Random
 
@@ -125,15 +125,15 @@ class MainActivity : AppCompatActivity() {
         // Generiere das weiße Rauschen
         val signal = DoubleArray(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }//(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }.toDoubleArray()
         //val signal = DoubleArray(sampleSize) //List(sampleSize) { 0.0 }.toMutableList()
-        val bandPass = BandPass(100f, 3000f, Fs.toFloat())
-        bandPass.
-        /*for (i in 0 until sampleSize) {
+        /*val bandPass = BandPass(100f, 3000f, Fs.toFloat())
+        bandPass.*/
+        for (i in 0 until sampleSize) {
             signal[i] = (amplitude * Math.sin(phase))
             phase += twopi * (frequency) / Fs
             if (phase > twopi) {
                 phase -= twopi
             }
-        }*/
+        }
 
 
         val plotData = fftObj.printSpectrogram(signal)
