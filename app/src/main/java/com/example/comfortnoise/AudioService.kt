@@ -3,7 +3,11 @@ package com.example.comfortnoise
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
+import java.io.File
+import java.io.InputStream
 import java.util.Random
+//import be.tarsos.dsp.filters.BandPass
+
 
 class AudioService(spectogramView: CanvasSpectogram) {
 
@@ -19,20 +23,51 @@ class AudioService(spectogramView: CanvasSpectogram) {
 
     // fft
     val WS = 2048 //  WS = window size
-    lateinit var fftObj: FFT
+    lateinit var signalServiceObj: SignalService
     init {
 
-        fftObj = FFT(WS,Fs.toDouble())
+        signalServiceObj = SignalService(WS,Fs.toDouble())
     }
 
-    fun startAudioThread(whiteNoise: Int)
+    fun startAudioThread(audioFileStream: InputStream)
     {
-
+        val signal = readWavfile(audioFileStream)
         Thread {
             initTrack()
             startPlaying()
-            playback()
+            playback(signal)
         }.start()
+    }
+
+    private fun readWavfile(fileInputStream: InputStream): DoubleArray {
+
+        val signal = DoubleArray(noiseLength)
+        try {
+            val srcFile = File("test.wav")
+            //val `in` = this::class.java.classLoader.getResourceAsStream( file)//FileInputStream(srcFile)
+            val `in` = fileInputStream//resources.openRawResource(resId)//FileInputStream(file)
+            //val output = ObjectOutputStream(FileOutputStream("gilad-OutPut.bin"))
+            //val buf = ByteArray(80000)
+            //val shortArr = ShortArray(buf.size / 2)
+            //`in`.read(buf)
+
+            val buf = ByteArray(noiseLength*2)
+            `in`.read(buf)
+            /*val audioData = mutableListOf<Double>()
+            while (fileInputStream.read(buf) != -1) {
+                for (i in buffer.indices) {
+                    audioData.add(buffer[i].toDouble())
+                }
+            }*/
+            for (i in 0 until noiseLength) {
+                signal[i] =
+                    (buf[i * 2].toInt() and 0xff or (buf[i * 2 + 1].toInt() shl 8)).toDouble()
+            }
+            `in`.close()
+        } catch (e: Exception) {
+            System.err.println(e)
+        }
+        return signal
     }
     private fun initTrack() {
         // Very similar to opening a stream in PyAudio
@@ -46,7 +81,7 @@ class AudioService(spectogramView: CanvasSpectogram) {
         )
     }
 
-    private fun playback( ) {
+    private fun playback(signal: DoubleArray) {
         // simple sine wave generator
         val frame_out: ShortArray = ShortArray(buffLength)
         val amplitude: Int = 32767
@@ -61,20 +96,20 @@ class AudioService(spectogramView: CanvasSpectogram) {
         val random = Random() // Initialisiere den Zufallsgenerator mit einer Seed (kann angepasst werden)
 
         // Generiere das weiße Rauschen
-        val signal = DoubleArray(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }//(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }.toDoubleArray()
+        //val signal = DoubleArray(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }//(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }.toDoubleArray()
         //val signal = DoubleArray(sampleSize) //List(sampleSize) { 0.0 }.toMutableList()
         /*val bandPass = BandPass(100f, 3000f, Fs.toFloat())
         bandPass.*/
-        for (i in 0 until sampleSize) {
+        /*for (i in 0 until sampleSize) {
             signal[i] = (amplitude * Math.sin(phase))
             phase += twopi * (frequency) / Fs
             if (phase > twopi) {
                 phase -= twopi
             }
-        }
+        }*/
 
 
-        val plotData = fftObj.printSpectrogram(signal)
+        val plotData = signalServiceObj.printSpectrogram(signal)
 
         var idxNoise = 0;
         var idxPlot = 0;

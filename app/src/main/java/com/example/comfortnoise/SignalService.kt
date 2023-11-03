@@ -2,7 +2,7 @@ package com.example.comfortnoise
 
 import java.util.Arrays
 
-class FFT(private val fftsize: Int, private val samplingrate: Double )  {
+class SignalService(private val fftsize: Int, private val samplingrate: Double )  {
     private var windowsize_: Int = fftsize
     private var samplingrate_: Double = samplingrate.toDouble()
     var m: Int = 0

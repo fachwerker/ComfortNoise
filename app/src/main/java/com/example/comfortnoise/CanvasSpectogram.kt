@@ -32,7 +32,7 @@ class CanvasSpectogram @JvmOverloads constructor(
     //private lateinit var colorsArray: Array<Array<Int>>
     private val colorsArray = Array(1074) { IntArray( nY )  }
     private val colorsPositionArray = FloatArray( nY ) {i -> i*1f/nY}
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (canvas != null) {
             //colorsArray = Array(width) { Array(nY) { 0 } }
