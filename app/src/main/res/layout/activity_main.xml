@@ -27,9 +27,21 @@
         android:textOff="WhiteNoise"
         android:textOn="WhiteNoise"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/PinkNoise"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/blue_noise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:shadowColor="@color/black"
+        android:text="ToggleButton"
+        android:textAllCaps="false"
+        android:textOff="blue_noise"
+        android:textOn="blue_noise"
+        app:layout_constraintBottom_toTopOf="@+id/WhiteNoise"
         app:layout_constraintStart_toStartOf="parent" />
+
 
     <ToggleButton
         android:id="@+id/PinkNoise"
@@ -39,7 +51,60 @@
         android:textOff="Pink Off"
         android:textOn="Pink On"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.721"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
+    <ToggleButton
+        android:id="@+id/brown_noise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="60dp"
+        android:shadowColor="@color/black"
+        android:text="ToggleButton"
+        android:textAllCaps="false"
+        android:textOff="brown_noise"
+        android:textOn="brown_noise"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/blue_noise" />
+
+    <ToggleButton
+        android:id="@+id/fuzz"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="60dp"
+        android:shadowColor="@color/black"
+        android:text="fuzz"
+        android:textAllCaps="false"
+        android:textOff="fuzz"
+        android:textOn="fuzz"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/grey_noise"
+        app:layout_constraintHorizontal_bias="0.583"
+        app:layout_constraintStart_toEndOf="@+id/brown_noise" />
+
+    <ToggleButton
+        android:id="@+id/grey_noise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:shadowColor="@color/black"
+        android:text="grey_noise"
+        android:textAllCaps="false"
+        android:textOff="grey_noise"
+        android:textOn="grey_noise"
+        app:layout_constraintBottom_toTopOf="@+id/PinkNoise"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/sine_sweep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:shadowColor="@color/black"
+        android:text="sine_sweep"
+        android:textAllCaps="false"
+        android:textOff="sine_sweep"
+        android:textOn="sine_sweep"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/WhiteNoise"
+        app:layout_constraintStart_toEndOf="@+id/PinkNoise" />
 </androidx.constraintlayout.widget.ConstraintLayout>

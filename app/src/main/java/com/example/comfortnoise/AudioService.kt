@@ -18,7 +18,7 @@ class AudioService(spectogramView: CanvasSpectogram) {
     var isPlaying: Boolean = false
     val Fs: Int = 44100
     //val buffLength: Int = AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
-    val noiseLength: Int = Fs*1 // 5s
+    var noiseLength: Int = Fs*1 // 5s
     val buffLength: Int = 4096//AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
 
     // fft
@@ -35,39 +35,39 @@ class AudioService(spectogramView: CanvasSpectogram) {
         Thread {
             initTrack()
             startPlaying()
-            playback(signal)
+            if (signal != null) {
+                playback(signal)
+            }
         }.start()
     }
 
-    private fun readWavfile(fileInputStream: InputStream): DoubleArray {
 
-        val signal = DoubleArray(noiseLength)
+    private fun readWavfile(inputStream: InputStream): DoubleArray? {
+
         try {
-            val srcFile = File("test.wav")
-            //val `in` = this::class.java.classLoader.getResourceAsStream( file)//FileInputStream(srcFile)
-            val `in` = fileInputStream//resources.openRawResource(resId)//FileInputStream(file)
-            //val output = ObjectOutputStream(FileOutputStream("gilad-OutPut.bin"))
-            //val buf = ByteArray(80000)
-            //val shortArr = ShortArray(buf.size / 2)
-            //`in`.read(buf)
+            val `in` = inputStream
+            val header = ByteArray(44)
+            `in`.read(header)
+            var bufLength = 0u
+            for (idx in 40 until 44) {
+                bufLength += (header[idx].toUInt() shl 8 * (idx - 4))
+            }
 
+            noiseLength = bufLength.toInt()/ 2
+
+            val signal = DoubleArray(noiseLength)
             val buf = ByteArray(noiseLength*2)
             `in`.read(buf)
-            /*val audioData = mutableListOf<Double>()
-            while (fileInputStream.read(buf) != -1) {
-                for (i in buffer.indices) {
-                    audioData.add(buffer[i].toDouble())
-                }
-            }*/
             for (i in 0 until noiseLength) {
                 signal[i] =
                     (buf[i * 2].toInt() and 0xff or (buf[i * 2 + 1].toInt() shl 8)).toDouble()
             }
             `in`.close()
+            return signal
         } catch (e: Exception) {
             System.err.println(e)
         }
-        return signal
+        return null
     }
     private fun initTrack() {
         // Very similar to opening a stream in PyAudio

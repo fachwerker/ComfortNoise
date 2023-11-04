@@ -30,12 +30,12 @@ class SignalService(private val fftsize: Int, private val samplingrate: Double )
 
 
 
-    fun printSpectrogram(frame_out: DoubleArray): Array<DoubleArray> {
+    fun printSpectrogram(signal: DoubleArray): Array<DoubleArray> {
 
 
         //get raw double array containing .WAV data
-        val rawData: DoubleArray = frame_out
-        val length = frame_out.size // this is actually the size of the whole array
+        val rawData: DoubleArray = signal
+        val length = signal.size // this is actually the size of the whole array
 
         //initialize parameters for FFT
         val OF = 8 //OF = overlap factor
@@ -83,7 +83,7 @@ class SignalService(private val fftsize: Int, private val samplingrate: Double )
                 val threshold = 1.0
                 // limit values and convert to dB
                 var valueDb = 10 * Math.log10(Math.max(amp_square, threshold))
-                plotData[i][j] = valueDb
+                plotData[i][nY-j-1] = valueDb
 
                 //find MAX and MIN amplitude
                 if (valueDb > maxAmp)
@@ -105,19 +105,7 @@ class SignalService(private val fftsize: Int, private val samplingrate: Double )
             }
         }
 
-        //plot image
-        //val paint = Paint()
-        //var ratio: Double
-        //for (x in 0 until nX) {
-            /*for (y in 0 until WS) {
-                ratio = plotData[x][y]
-
-                //theImage.setRGB(x, y, new Color(red, green, 0).getRGB());
-                val newColor: Color = getColor((1.0 - ratio).toInt())
-                theImage.setRGB(x, y, newColor.getRGB())
-            }*/
         return plotData
-        //
     }
 
     fun fft(x: DoubleArray, y: DoubleArray) {

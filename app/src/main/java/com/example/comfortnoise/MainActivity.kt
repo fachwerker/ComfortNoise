@@ -3,8 +3,6 @@ package com.example.comfortnoise
 //import android.R
 
 import android.graphics.Color
-import android.media.AudioTrack
-import android.media.SoundPool
 import android.os.Bundle
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
@@ -33,8 +31,13 @@ class MainActivity : AppCompatActivity() {
 
         class Buttons(val button: android.widget.ToggleButton,val filename: String)
         val buttons: Array<Buttons> = arrayOf(
+            Buttons(binding.blueNoise,"blue_noise"),
+            Buttons(binding.brownNoise,"brown_noise"),
+            Buttons(binding.fuzz,"fuzz"),
+            Buttons(binding.greyNoise,"grey_noise"),
+            Buttons(binding.sineSweep,"sine_sweep"),
+            Buttons(binding.WhiteNoise,"white_noise_short"),
             Buttons(binding.PinkNoise,"pink_noise"),
-            Buttons(binding.WhiteNoise,"white_noise")
         )
         for (button in buttons)
         {
@@ -43,7 +46,6 @@ class MainActivity : AppCompatActivity() {
                     compoundButton.setBackgroundColor(Color.GREEN)
 
                     val resId = resources.getIdentifier(button.filename, "raw", packageName)
-
                     audioService.startAudioThread(resources.openRawResource(resId))
                 } else {
                     compoundButton.setBackgroundColor(Color.RED)
