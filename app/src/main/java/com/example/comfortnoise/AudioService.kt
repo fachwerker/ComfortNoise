@@ -16,13 +16,13 @@ class AudioService(spectogramView: CanvasSpectogram) {
     // synthesize sound
     lateinit var Track: AudioTrack
     var isPlaying: Boolean = false
-    val Fs: Int = 44100
+    val Fs: Int = SAMPLING_FREQUENCY
     //val buffLength: Int = AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
     var noiseLength: Int = Fs*1 // 5s
     val buffLength: Int = 4096//AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
 
     // fft
-    val WS = 2048 //  WS = window size
+    val WS = WINDOW_SIZE //  WS = window size
     lateinit var signalServiceObj: SignalService
     init {
 
@@ -93,36 +93,14 @@ class AudioService(spectogramView: CanvasSpectogram) {
         val minValue = 0 // Minimaler Wert des Rauschens
         val maxValue = amplitude // Maximaler Wert des Rauschens
 
-        val random = Random() // Initialisiere den Zufallsgenerator mit einer Seed (kann angepasst werden)
-
-        // Generiere das weiße Rauschen
-        //val signal = DoubleArray(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }//(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }.toDoubleArray()
-        //val signal = DoubleArray(sampleSize) //List(sampleSize) { 0.0 }.toMutableList()
-        /*val bandPass = BandPass(100f, 3000f, Fs.toFloat())
-        bandPass.*/
-        /*for (i in 0 until sampleSize) {
-            signal[i] = (amplitude * Math.sin(phase))
-            phase += twopi * (frequency) / Fs
-            if (phase > twopi) {
-                phase -= twopi
-            }
-        }*/
-
-
         val plotData = signalServiceObj.printSpectrogram(signal)
 
         var idxNoise = 0;
         var idxPlot = 0;
         while (isPlaying) {
             for (i in 0 until buffLength) {
-                /*frame_out[i] = (amplitude * Math.sin(phase)).toInt().toShort()
-                phase += twopi * frequency / Fs
-                if (phase > twopi) {
-                    phase -= twopi
-                }*/
                 frame_out[i] = signal[idxNoise%sampleSize].toInt().toShort()
                 idxNoise++
-                //frame_out[i] = whiteNoise[i]
             }
             Track.write(frame_out, 0, buffLength)
 
@@ -145,5 +123,11 @@ class AudioService(spectogramView: CanvasSpectogram) {
             Track.stop()
             Track.release()
         }
+    }
+    private fun generateRandomSignal(sampleSize: Int): DoubleArray {
+        val random = Random()
+
+        val signal = DoubleArray(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }
+        return signal
     }
 }

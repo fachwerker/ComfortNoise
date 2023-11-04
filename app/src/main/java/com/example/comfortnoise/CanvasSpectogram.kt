@@ -8,7 +8,6 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.view.View
 
 import java.util.Arrays
@@ -17,27 +16,19 @@ class CanvasSpectogram @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private var xHalf: Float = width*1.0f
-    private var yHalf: Float = height*1.0f
-    private var xCurrent: Float = 0f
-
     private val paint_ = Paint()
     private lateinit var mCanvas : Canvas
-    val WS = 2048
+    val WS = WINDOW_SIZE
     val nY = WS/2 + 1
     val nX = width
 
-    //val displayMetrics = DisplayMetrics()
     // TODO: check if Array of ints could be used
     //private lateinit var colorsArray: Array<Array<Int>>
     private val colorsArray = Array(1074) { IntArray( nY )  }
     private val colorsPositionArray = FloatArray( nY ) {i -> i*1f/nY}
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        if (canvas != null) {
-            //colorsArray = Array(width) { Array(nY) { 0 } }
-            mCanvas  = canvas
-        }
+        mCanvas  = canvas
 
         for (x in 0 until width) {
             val xfloat = x.toFloat()
@@ -49,7 +40,7 @@ class CanvasSpectogram @JvmOverloads constructor(
                 colorsPositionArray, // distribution of colors along the length of gradient.
                 Shader.TileMode.CLAMP
             )
-            mCanvas?.drawLine(xfloat, 0f, xfloat, height.toFloat(), paint_)
+            mCanvas.drawLine(xfloat, 0f, xfloat, height.toFloat(), paint_)
 
         }
 
@@ -63,7 +54,6 @@ class CanvasSpectogram @JvmOverloads constructor(
 
     private fun shiftColorsArrayOneIndexLeft() {
         for (x in 0 until width - 1) {
-            val xfloat = x.toFloat()
             colorsArray[x] = colorsArray[x + 1].copyOf()
         }
     }
