@@ -1,10 +1,12 @@
 package com.example.comfortnoise
 
-import java.util.Arrays
+import kotlin.math.cos
+import kotlin.math.ln
+import kotlin.math.log10
+import kotlin.math.sin
 
-class SignalService(private val fftsize: Int, private val samplingrate: Double )  {
-    private var windowsize_: Int = fftsize
-    private var samplingrate_: Double = samplingrate.toDouble()
+class SignalService(private val fftsize: Int)  {
+    private var windowSize: Int = fftsize
     var m: Int = 0
 
     // Lookup tables. Only need to recompute when size of FFT changes.
@@ -13,8 +15,8 @@ class SignalService(private val fftsize: Int, private val samplingrate: Double )
 
 
     init {
-        var n = windowsize_
-        m = (Math.log(n.toDouble()) / Math.log(2.0)).toInt()
+        val n = windowSize
+        m = (ln(n.toDouble()) / ln(2.0)).toInt()
 
         // Make sure n is a power of 2
         if (n != 1 shl m) throw RuntimeException("FFT length must be power of 2")
@@ -23,35 +25,20 @@ class SignalService(private val fftsize: Int, private val samplingrate: Double )
         cos = DoubleArray(n / 2)
         sin = DoubleArray(n / 2)
         for (i in 0 until n / 2) {
-            cos[i] = Math.cos(-2 * Math.PI * i / n)
-            sin[i] = Math.sin(-2 * Math.PI * i / n)
+            cos[i] = cos(-2 * Math.PI * i / n)
+            sin[i] = sin(-2 * Math.PI * i / n)
         }
     }
 
+    fun getSpectrogram(signal: DoubleArray): Array<DoubleArray> {
 
-
-    fun printSpectrogram(signal: DoubleArray): Array<DoubleArray> {
-
-
-        //get raw double array containing .WAV data
         val rawData: DoubleArray = signal
         val length = signal.size // this is actually the size of the whole array
 
         //initialize parameters for FFT
         val OF = 8 //OF = overlap factor
-        val WS = windowsize_
+        val WS = windowSize
         val windowStep = WS / OF
-
-        //calculate FFT parameters
-        val SR: Double = samplingrate_
-        val time_resolution = WS / SR
-        val frequency_resolution = SR / WS
-        val highest_detectable_frequency = SR / 2.0
-        val lowest_detectable_frequency = 5.0 * SR / WS
-        println("time_resolution:              " + time_resolution * 1000 + " ms")
-        println("frequency_resolution:         $frequency_resolution Hz")
-        println("highest_detectable_frequency: $highest_detectable_frequency Hz")
-        println("lowest_detectable_frequency:  $lowest_detectable_frequency Hz")
 
         //initialize plotData array
         val nX = (length - WS) / windowStep
@@ -64,25 +51,23 @@ class SignalService(private val fftsize: Int, private val samplingrate: Double )
         //apply FFT and find MAX and MIN amplitudes
         var maxAmp = Double.MIN_VALUE
         var minAmp = Double.MAX_VALUE
-        var amp_square: Double
-        val inputImag = DoubleArray(length)
         for (i in 0 until nX) {
-            Arrays.fill(inputImag, 0.0)
-            val WS_array = DoubleArray(length)
+            val imaginaryPart = DoubleArray(WS) { 0.0 } // signal is real
+            val realPart = rawData.copyOfRange(i * windowStep, i * windowStep + WS)
             fft(
-                Arrays.copyOfRange(rawData, i * windowStep, i * windowStep + WS),
-                WS_array
+                realPart,
+                imaginaryPart
             )
             for (j in 0 until nY) {
-                amp_square =
-                    WS_array[2 * j] * WS_array[2 * j] + WS_array[2 * j + 1] * WS_array[2 * j + 1]
+                var power =
+                    realPart[j] * realPart[j] + imaginaryPart[j] * imaginaryPart[j]
 
 
                 // e.g. 80dB below your signal's spectrum peak amplitude
                 // select threshold based on the expected spectrum amplitudes
                 val threshold = 1.0
                 // limit values and convert to dB
-                var valueDb = 10 * Math.log10(Math.max(amp_square, threshold))
+                val valueDb = 10 * log10(Math.max(power, threshold))
                 plotData[i][nY-j-1] = valueDb
 
                 //find MAX and MIN amplitude
@@ -92,10 +77,6 @@ class SignalService(private val fftsize: Int, private val samplingrate: Double )
                     minAmp = valueDb
             }
         }
-        println("---------------------------------------------------")
-        println("Maximum amplitude: $maxAmp")
-        println("Minimum amplitude: $minAmp")
-        println("---------------------------------------------------")
 
         //Normalization
         val diff = maxAmp - minAmp
@@ -108,8 +89,27 @@ class SignalService(private val fftsize: Int, private val samplingrate: Double )
         return plotData
     }
 
+    /**********************************************************/
+    /* fft.c                                                  */
+    /* (c) Douglas L. Jones                                   */
+    /* University of Illinois at Urbana-Champaign             */
+    /* January 19, 1992                                       */
+    /*                                                        */
+    /*   fft: in-place radix-2 DIT DFT of a complex input     */
+    /*                                                        */
+    /*   input:                                               */
+    /* n: length of FFT: must be a power of two               */
+    /* m: n = 2**m                                            */
+    /*   input/output                                         */
+    /* x: double array of length n with real part of data     */
+    /* y: double array of length n with imag part of data     */
+    /*                                                        */
+    /*   Permission to copy and use this program is granted   */
+    /*   under a Creative Commons "Attribution" license       */
+    /*   http://creativecommons.org/licenses/by/1.0/          */
+    /**********************************************************/
     fun fft(x: DoubleArray, y: DoubleArray) {
-        var n = windowsize_
+        var n = windowSize
         var i: Int
         var j: Int
         var k: Int
@@ -172,46 +172,4 @@ class SignalService(private val fftsize: Int, private val samplingrate: Double )
         }
     }
 
-    /*fun fft(x: DoubleArray, y: DoubleArray) {
-        val n = x.size
-        if (n <= 1) return
-
-        var i = 0
-        var j = 0
-        while (i < n) {
-            if (i < j) {
-                val tempX = x[i]
-                val tempY = y[i]
-                x[i] = x[j]
-                y[i] = y[j]
-                x[j] = tempX
-                y[j] = tempY
-            }
-
-            var k = n / 2
-            while (k <= j) {
-                j -= k
-                k /= 2
-            }
-            j += k
-            i++
-        }
-
-        var m = 1
-        while (m < n) {
-            val m2 = m * 2
-            for (i in 0 until m) {
-                val omega = m * cos[i]
-                val s = sin[i]
-                for (j in i until n step m2) {
-                    val t = x[j + m] * omega - y[j + m] * s
-                    x[j + m] = x[j] - t
-                    y[j + m] = y[j] + t
-                    x[j] += t
-                    y[j] -= t
-                }
-            }
-            m = m2
-        }
-    }*/
 }

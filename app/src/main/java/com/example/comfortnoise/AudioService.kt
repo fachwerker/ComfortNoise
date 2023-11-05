@@ -3,7 +3,6 @@ package com.example.comfortnoise
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
-import java.io.File
 import java.io.InputStream
 import java.util.Random
 //import be.tarsos.dsp.filters.BandPass
@@ -26,7 +25,7 @@ class AudioService(spectogramView: CanvasSpectogram) {
     lateinit var signalServiceObj: SignalService
     init {
 
-        signalServiceObj = SignalService(WS,Fs.toDouble())
+        signalServiceObj = SignalService(WS)
     }
 
     fun startAudioThread(audioFileStream: InputStream)
@@ -83,26 +82,18 @@ class AudioService(spectogramView: CanvasSpectogram) {
 
     private fun playback(signal: DoubleArray) {
         // simple sine wave generator
-        val frame_out: ShortArray = ShortArray(buffLength)
-        val amplitude: Int = 32767
-        val frequency: Int = 3000
-        val twopi: Double = 8.0 * Math.atan(1.0)
-        var phase: Double = 0.0
+        val frameOut: ShortArray = ShortArray(buffLength)
 
-        val sampleSize = noiseLength // Anzahl der Rauschwerte
-        val minValue = 0 // Minimaler Wert des Rauschens
-        val maxValue = amplitude // Maximaler Wert des Rauschens
-
-        val plotData = signalServiceObj.printSpectrogram(signal)
+        val plotData = signalServiceObj.getSpectrogram(signal)
 
         var idxNoise = 0;
         var idxPlot = 0;
         while (isPlaying) {
             for (i in 0 until buffLength) {
-                frame_out[i] = signal[idxNoise%sampleSize].toInt().toShort()
+                frameOut[i] = signal[idxNoise%noiseLength].toInt().toShort()
                 idxNoise++
             }
-            Track.write(frame_out, 0, buffLength)
+            Track.write(frameOut, 0, buffLength)
 
             _spectogramView.drawSpectogram(plotData[idxPlot%plotData.size])
             idxPlot++

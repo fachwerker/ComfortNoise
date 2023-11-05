@@ -18,8 +18,7 @@ class CanvasSpectogram @JvmOverloads constructor(
 
     private val paint_ = Paint()
     private lateinit var mCanvas : Canvas
-    val WS = WINDOW_SIZE
-    val nY = WS/2 + 1
+    val nY = WINDOW_SIZE/2 + 1
     val nX = width
 
     // TODO: check if Array of ints could be used
