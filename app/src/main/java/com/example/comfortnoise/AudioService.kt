@@ -95,7 +95,8 @@ class AudioService(spectogramView: CanvasSpectogram) {
             }
             Track.write(frameOut, 0, buffLength)
 
-            _spectogramView.drawSpectogram(plotData[idxPlot%plotData.size])
+            if(idxPlot%32==0)
+                _spectogramView.drawSpectogram(plotData[idxPlot%plotData.size])
             idxPlot++
         }
     }
