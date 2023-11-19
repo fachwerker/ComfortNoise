@@ -2,6 +2,8 @@ package com.example.comfortnoise
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -20,6 +22,8 @@ class CanvasSpectogram @JvmOverloads constructor(
     private lateinit var mCanvas : Canvas
     val nY = WINDOW_SIZE/2 + 1
     val nX = width
+    var invalidateCounter = 0
+    lateinit var bitmap : Bitmap
 
     // TODO: check if Array of ints could be used
     //private lateinit var colorsArray: Array<Array<Int>>
@@ -31,7 +35,7 @@ class CanvasSpectogram @JvmOverloads constructor(
 
         for (x in 0 until width) {
             val xfloat = x.toFloat()
-            val rowArray = colorsArray[x]//.toIntArray()
+            val rowArray = colorsArray[x]
 
             paint_.shader = LinearGradient(
                 xfloat, 0f, xfloat, height.toFloat(),
@@ -42,13 +46,15 @@ class CanvasSpectogram @JvmOverloads constructor(
             mCanvas.drawLine(xfloat, 0f, xfloat, height.toFloat(), paint_)
 
         }
-
     }
 
     fun drawSpectogram(frame: DoubleArray){
         shiftColorsArrayOneIndexLeft()
         updateCurrentColor(frame)
-        invalidate()
+        if((invalidateCounter%OVERLAP_FACTOR)==0) {
+            invalidate()
+        }
+        invalidateCounter++
     }
 
     private fun shiftColorsArrayOneIndexLeft() {

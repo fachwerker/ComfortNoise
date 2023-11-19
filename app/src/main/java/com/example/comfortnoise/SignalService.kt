@@ -5,7 +5,8 @@ import kotlin.math.ln
 import kotlin.math.log10
 import kotlin.math.sin
 
-class SignalService(private val fftsize: Int)  {
+
+class SignalService(private val fftsize: Int, val overlap_factor: Int)  {
     private var windowSize: Int = fftsize
     var m: Int = 0
 
@@ -36,9 +37,8 @@ class SignalService(private val fftsize: Int)  {
         val length = signal.size // this is actually the size of the whole array
 
         //initialize parameters for FFT
-        val OF = 8 //OF = overlap factor
         val WS = windowSize
-        val windowStep = WS / OF
+        val windowStep = WS / overlap_factor
 
         //initialize plotData array
         val nX = (length - WS) / windowStep
@@ -54,6 +54,11 @@ class SignalService(private val fftsize: Int)  {
         for (i in 0 until nX) {
             val imaginaryPart = DoubleArray(WS) { 0.0 } // signal is real
             val realPart = rawData.copyOfRange(i * windowStep, i * windowStep + WS)
+            val startIdx = i * windowStep
+            for (idx in 0 until WS) {
+                realPart[idx] =
+                    (rawData[startIdx + idx] * 0.5 * (1.0 - cos(2.0 * Math.PI * idx / WS)))
+            }
             fft(
                 realPart,
                 imaginaryPart

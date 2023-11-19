@@ -25,7 +25,7 @@ class AudioService(spectogramView: CanvasSpectogram) {
     lateinit var signalServiceObj: SignalService
     init {
 
-        signalServiceObj = SignalService(WS)
+        signalServiceObj = SignalService(WS, OVERLAP_FACTOR)
     }
 
     fun startAudioThread(audioFileStream: InputStream)
@@ -95,9 +95,11 @@ class AudioService(spectogramView: CanvasSpectogram) {
             }
             Track.write(frameOut, 0, buffLength)
 
-            if(idxPlot%32==0)
-                _spectogramView.drawSpectogram(plotData[idxPlot%plotData.size])
-            idxPlot++
+            for (i in 0 until OVERLAP_FACTOR) {
+                if (true/*idxPlot%32==0*/)
+                    _spectogramView.drawSpectogram(plotData[idxPlot % plotData.size])
+                idxPlot++
+            }
         }
     }
 
