@@ -72,9 +72,9 @@ class CanvasSpectogram @JvmOverloads constructor(
 
     private fun getColor(power: Float): Int {
         //val H = power * 0.4 // Hue (note 0.4 = Green, see huge chart below)
-        val H = power * 144 // Hue (note 0.4 = Green, see huge chart below)
+        val H = power * 360 // Hue (note 0.4 = Green, see huge chart below)
         val S = 1.0 // Saturation
-        val B = 1.0 // Brightness
+        val B = 1.0-power // Brightness
         val hsb = floatArrayOf(H.toFloat(), S.toFloat(), B.toFloat())
 
         return Color.HSVToColor(hsb) // int the resulting argb color

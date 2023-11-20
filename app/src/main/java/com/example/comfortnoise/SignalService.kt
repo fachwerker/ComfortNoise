@@ -53,12 +53,12 @@ class SignalService(private val fftsize: Int, val overlap_factor: Int)  {
         var minAmp = Double.MAX_VALUE
         for (i in 0 until nX) {
             val imaginaryPart = DoubleArray(WS) { 0.0 } // signal is real
-            val realPart = rawData.copyOfRange(i * windowStep, i * windowStep + WS)
             val startIdx = i * windowStep
-            for (idx in 0 until WS) {
+            val realPart = rawData.copyOfRange(startIdx, startIdx + WS)
+            /*for (idx in 0 until WS) { // hann windowing
                 realPart[idx] =
                     (rawData[startIdx + idx] * 0.5 * (1.0 - cos(2.0 * Math.PI * idx / WS)))
-            }
+            }*/
             fft(
                 realPart,
                 imaginaryPart

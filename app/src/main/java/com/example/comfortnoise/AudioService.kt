@@ -1,10 +1,13 @@
 package com.example.comfortnoise
 
+import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
 import java.io.InputStream
 import java.util.Random
+
+
 //import be.tarsos.dsp.filters.BandPass
 
 
@@ -74,9 +77,25 @@ class AudioService(spectogramView: CanvasSpectogram) {
 
         // AudioTrack is deprecated for some android versions
         // Please look up for other alternatives if this does not work
+
+        val audioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .build()
+
+        val audioFormat = AudioFormat.Builder()
+            .setSampleRate(Fs)
+            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .build()
+
+// then, initialize with new constructor
         Track = AudioTrack(
-            AudioManager.MODE_NORMAL, Fs, AudioFormat.CHANNEL_OUT_MONO,
-            AudioFormat.ENCODING_PCM_16BIT, buffLength, AudioTrack.MODE_STREAM
+            audioAttributes,
+            audioFormat,
+            buffLength,
+            AudioTrack.MODE_STREAM,
+            0
         )
     }
 

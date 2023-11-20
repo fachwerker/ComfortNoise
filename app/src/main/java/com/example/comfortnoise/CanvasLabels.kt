@@ -1,6 +1,7 @@
 package com.example.comfortnoise
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -11,11 +12,19 @@ class CanvasLabels @JvmOverloads constructor(context: Context, attrs: AttributeS
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         val paint = Paint()
-        paint.textSize = 20f
-        paint.color = Color.DKGRAY
-        canvas.drawText("f[kHz]",20f,20f,paint)
-        paint.textSize = 40f
+        paint.textSize = 25f
+        val nightModeFlags = context.resources.configuration.uiMode and
+                Configuration.UI_MODE_NIGHT_MASK
+        when (nightModeFlags) {
+            Configuration.UI_MODE_NIGHT_YES -> paint.color = Color.WHITE
+            Configuration.UI_MODE_NIGHT_NO -> paint.color = Color.BLACK
+            Configuration.UI_MODE_NIGHT_UNDEFINED -> paint.color = Color.BLACK
+        }
 
+        canvas.drawText("f",20f,30f,paint)
+
+        canvas.drawText("[kHz]",20f,60f,paint)
+        paint.textSize = 40f
 
         class Label(val textlabel: String,val ypos: Float)
         val labels: Array<Label> = arrayOf(
@@ -29,11 +38,13 @@ class CanvasLabels @JvmOverloads constructor(context: Context, attrs: AttributeS
             Label("6",height*16/22f),
             Label("4",height*18/22f),
             Label("2",height*20/22f),
-            Label("0",height*22/22f),
-
         )
         for (label in labels) {
-            canvas.drawText(label.textlabel, 20f, label.ypos, paint);
+            canvas.drawLine(0f, label.ypos, 10f, label.ypos, paint)
+            canvas.drawText(label.textlabel, 20f, label.ypos+10, paint)
         }
+
+        canvas.drawLine(0f, height.toFloat(), 10f, height.toFloat(), paint)
+        canvas.drawText("0", 20f, height.toFloat(), paint)
     }
 }
