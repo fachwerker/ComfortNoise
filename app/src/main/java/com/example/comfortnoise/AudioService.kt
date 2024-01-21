@@ -2,7 +2,6 @@ package com.example.comfortnoise
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
-import android.media.AudioManager
 import android.media.AudioTrack
 import java.io.InputStream
 import java.util.Random
@@ -11,13 +10,31 @@ import java.util.Random
 //import be.tarsos.dsp.filters.BandPass
 
 
-class AudioService(spectogramView: CanvasSpectogram) {
+class AudioService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver*/) {
+
+    /* currently there is no need to check for screen off as onPause is called anyhow before the screen is disabled.
+    * Anyhow also the disabled screen event was received */
+    /*
+     val screenReceiver: ScreenReceiver = mReceiver
+     class ScreenReceiver : BroadcastReceiver() {
+        var wasScreenOn:Boolean = true
+
+        override fun onReceive(context: Context?, intent: Intent) {
+            if (intent.action == Intent.ACTION_SCREEN_OFF) {
+                // do whatever you need to do here
+                wasScreenOn = false
+            } else if (intent.action == Intent.ACTION_SCREEN_ON) {
+                // and do whatever you need to do here
+                wasScreenOn = true
+            }
+        }
+    }*/
 
     private var _spectogramView: CanvasSpectogram = spectogramView
-
     // synthesize sound
     lateinit var Track: AudioTrack
     var isPlaying: Boolean = false
+    var doUpdateView: Boolean = true
     val Fs: Int = SAMPLING_FREQUENCY
     //val buffLength: Int = AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
     var noiseLength: Int = Fs*1 // 5s
@@ -101,28 +118,40 @@ class AudioService(spectogramView: CanvasSpectogram) {
 
     private fun playback(signal: DoubleArray) {
         // simple sine wave generator
-        val frameOut: ShortArray = ShortArray(buffLength)
 
         val plotData = signalServiceObj.getSpectrogram(signal)
+        // val screenReceiver = ScreenReceiver()
 
         var idxNoise = 0;
         var idxPlot = 0;
         while (isPlaying) {
-            for (i in 0 until buffLength) {
-                frameOut[i] = signal[idxNoise%noiseLength].toInt().toShort()
-                idxNoise++
-            }
-            Track.write(frameOut, 0, buffLength)
-
-            for (i in 0 until OVERLAP_FACTOR) {
-                if (true/*idxPlot%32==0*/)
+            if (doUpdateView) {
+                val frameOut: ShortArray = ShortArray(buffLength)
+                for (i in 0 until buffLength) {
+                    frameOut[i] = signal[idxNoise % noiseLength].toInt().toShort()
+                    idxNoise++
+                }
+                Track.write(frameOut, 0, buffLength)
+                for (i in 0 until OVERLAP_FACTOR) {
                     _spectogramView.drawSpectogram(plotData[idxPlot % plotData.size])
-                idxPlot++
+                    idxPlot++
+                }
+            }else{
+                // if the app is not in the foreground, it runs with lower priority.
+                // To avoid artefacts in this case, the plotting is disabled and the whole signal is played at once
+                // reset signal index
+                idxPlot = 0
+                idxNoise = 0
+
+                val frameOut: ShortArray = ShortArray(signal.size)
+                for (i in 0 until signal.size) {
+                    frameOut[i] = signal[i].toInt().toShort()
+
+                }
+                Track.write(frameOut, 0, signal.size)
             }
         }
     }
-
-
 
     private fun startPlaying() {
         Track.play()
@@ -142,5 +171,12 @@ class AudioService(spectogramView: CanvasSpectogram) {
 
         val signal = DoubleArray(sampleSize) { random.nextGaussian()*Short.MAX_VALUE*0.1F }
         return signal
+    }
+
+    fun onPause() {
+        doUpdateView = false
+    }
+    fun onResume() {
+        doUpdateView = true
     }
 }

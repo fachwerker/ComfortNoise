@@ -1,12 +1,15 @@
 package com.example.comfortnoise
 
-//import android.R
-
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.CompoundButton
 import androidx.appcompat.app.AppCompatActivity
 import com.example.comfortnoise.databinding.ActivityMainBinding
+
+/*import android.content.Intent
+import android.content.IntentFilter
+import com.example.comfortnoise.AudioService.ScreenReceiver*/
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,8 +19,9 @@ class MainActivity : AppCompatActivity() {
     // Canvas
     private lateinit var spectogramview: CanvasSpectogram
 
-
     private lateinit var audioService: AudioService
+
+    // private var mReceiver: ScreenReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,7 +31,11 @@ class MainActivity : AppCompatActivity() {
         spectogramview = binding.myCanvas
         setContentView(binding.root)
 
-        audioService = AudioService(spectogramview)
+        /*val intentFilter = IntentFilter(Intent.ACTION_SCREEN_ON)
+        intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
+        mReceiver = ScreenReceiver()
+        registerReceiver(mReceiver, intentFilter)*/
+        audioService = AudioService(spectogramview/*, mReceiver!!*/)
 
         class Buttons(val button: android.widget.ToggleButton,val filename: String)
         val buttons: Array<Buttons> = arrayOf(
@@ -55,6 +63,18 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+    override fun onPause() {
+        audioService.onPause()
+        super.onPause()
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        audioService.onResume()
+    }
+
 
     override fun onDestroy() {
         audioService.stopPlaying()
