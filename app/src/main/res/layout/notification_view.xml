@@ -1,0 +1,51 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <ImageView
+        android:layout_alignParentLeft="true"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@mipmap/ic_launcher_round"
+        android:id="@+id/imgAppIc" />
+
+
+
+    <TextView
+        android:layout_toRightOf="@id/imgAppIc"
+        android:singleLine="true"
+        android:id="@+id/textView1"
+        android:ellipsize="marquee"
+        android:layout_marginLeft="7dp"
+        android:layout_marginTop="10dp"
+        android:marqueeRepeatLimit ="marquee_forever"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:scrollHorizontally="true"
+        android:layout_width="170dp"
+        android:layout_height="wrap_content"/>
+
+    <ImageButton
+        android:layout_toLeftOf="@id/notificationPause"
+        android:id="@+id/notificationPlay"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="center"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:backgroundTint="#38E371"
+        android:src="@drawable/ic_play" />
+    <ImageButton
+        android:layout_alignParentRight="true"
+        android:id="@+id/notificationPause"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="center"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:backgroundTint="#38E371"
+        android:src="@drawable/ic_pause" />
+
+</RelativeLayout>

@@ -1,9 +1,14 @@
 package com.example.comfortnoise
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.widget.CompoundButton
+import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import com.example.comfortnoise.databinding.ActivityMainBinding
 
 /*import android.content.Intent
@@ -37,6 +42,13 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(mReceiver, intentFilter)*/
         audioService = AudioService(spectogramview/*, mReceiver!!*/)
 
+        registerButtonOnCheckedCallback()
+
+        sendNotification()
+    }
+
+    private fun registerButtonOnCheckedCallback()
+    {
         class Buttons(val button: android.widget.ToggleButton,val filename: String)
         val buttons: Array<Buttons> = arrayOf(
             Buttons(binding.blueNoise,"blue_noise"),
@@ -49,19 +61,74 @@ class MainActivity : AppCompatActivity() {
         )
         for (button in buttons)
         {
+            button.button.setBackgroundResource(android.R.drawable.btn_default)
             button.button.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
                 if (isChecked) {
+                    audioService.stopPlaying()
+                    for (button in buttons)
+                    {
+                        button.button.setBackgroundResource(android.R.drawable.btn_default)
+                    }
                     compoundButton.setBackgroundColor(Color.GREEN)
-
                     val resId = resources.getIdentifier(button.filename, "raw", packageName)
                     audioService.startAudioThread(resources.openRawResource(resId))
                 } else {
-                    compoundButton.setBackgroundColor(Color.RED)
+                    compoundButton.setBackgroundResource(android.R.drawable.btn_default);
                     audioService.stopPlaying()
                 }
             }
         }
+    }
 
+    // This ID can be the value you want.
+    private val NOTIFICATION_ID = 0
+
+    // This ID can be the value you want.
+    private val NOTIFICATION_ID_STRING = "My Notifications"
+    private lateinit var mNotifyManager : NotificationManager //  = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+    /*class RemoteControlReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (action.equalsIgnoreCase("com.example.test.ACTION_PLAY")) {
+                if (mediaplayer.isPlaying()) {
+                    mediaplayer.pause()
+                    notification_view.setImageViewResource(R.id.button1, R.drawable.play)
+                    notification.contentView = notificationView
+                    notificationManager.notify(1, notification)
+                } else {
+                    mediaplayer.start()
+                    notificationView.setImageViewResource(R.id.button1, R.drawable.pause)
+                    notification.contentView = notificationView
+                    notificationManager.notify(1, notification)
+                }
+            }
+        }
+    }*/
+    private fun sendNotification() {
+        mNotifyManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        // Erstelle eine RemoteViews-Instanz mit dem Layout deiner benutzerdefinierten Ansicht
+        val notification_view = RemoteViews(packageName, R.layout.notification_view)
+
+        //Create the channel. Android will automatically check if the channel already exists
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                NOTIFICATION_ID_STRING,
+                "My Channel Name",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            channel.description = "My notification channel description"
+            channel.setSound(null,null)
+            mNotifyManager.createNotificationChannel(channel)
+        }
+        val notifyBuilder: NotificationCompat.Builder =
+            NotificationCompat.Builder(this, NOTIFICATION_ID_STRING)
+                .setContentTitle("You've been notified!")
+                .setContentText("This is your notification text.")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setCustomContentView(notification_view)
+                //.setPriority(NotificationCompat.PRIORITY_HIGH)
+        val myNotification = notifyBuilder.build()
+        mNotifyManager.notify(NOTIFICATION_ID, myNotification)
     }
 
     override fun onPause() {
