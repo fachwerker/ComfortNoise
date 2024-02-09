@@ -34,6 +34,7 @@ class AudioService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver
     // synthesize sound
     lateinit var Track: AudioTrack
     var isPlaying: Boolean = false
+    var isPause: Boolean = false
     var doUpdateView: Boolean = true
     val Fs: Int = SAMPLING_FREQUENCY
     //val buffLength: Int = AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
@@ -125,32 +126,41 @@ class AudioService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver
         var idxNoise = 0;
         var idxPlot = 0;
         while (isPlaying) {
-            if (doUpdateView) {
-                val frameOut: ShortArray = ShortArray(buffLength)
-                for (i in 0 until buffLength) {
-                    frameOut[i] = signal[idxNoise % noiseLength].toInt().toShort()
-                    idxNoise++
-                }
-                Track.write(frameOut, 0, buffLength)
-                for (i in 0 until OVERLAP_FACTOR) {
-                    _spectogramView.drawSpectogram(plotData[idxPlot % plotData.size])
-                    idxPlot++
-                }
-            }else{
-                // if the app is not in the foreground, it runs with lower priority.
-                // To avoid artefacts in this case, the plotting is disabled and the whole signal is played at once
-                // reset signal index
-                idxPlot = 0
-                idxNoise = 0
+            if (!isPause) {
+                if (doUpdateView) {
+                    val frameOut: ShortArray = ShortArray(buffLength)
+                    for (i in 0 until buffLength) {
+                        frameOut[i] = signal[idxNoise % noiseLength].toInt().toShort()
+                        idxNoise++
+                    }
+                    Track.write(frameOut, 0, buffLength)
+                    for (i in 0 until OVERLAP_FACTOR) {
+                        _spectogramView.drawSpectogram(plotData[idxPlot % plotData.size])
+                        idxPlot++
+                    }
+                } else {
+                    // if the app is not in the foreground, it runs with lower priority.
+                    // To avoid artefacts in this case, the plotting is disabled and the whole signal is played at once
+                    // reset signal index
+                    idxPlot = 0
+                    idxNoise = 0
 
-                val frameOut: ShortArray = ShortArray(signal.size)
-                for (i in 0 until signal.size) {
-                    frameOut[i] = signal[i].toInt().toShort()
+                    val frameOut: ShortArray = ShortArray(signal.size)
+                    for (i in 0 until signal.size) {
+                        frameOut[i] = signal[i].toInt().toShort()
 
+                    }
+                    Track.write(frameOut, 0, signal.size)
                 }
-                Track.write(frameOut, 0, signal.size)
             }
         }
+    }
+
+    fun pausePlaying() {
+        isPause = true
+    }
+    fun continuePlaying() {
+        isPause = false
     }
 
     private fun startPlaying() {

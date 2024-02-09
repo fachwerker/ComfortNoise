@@ -2,6 +2,11 @@ package com.example.comfortnoise
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -19,7 +24,7 @@ import com.example.comfortnoise.AudioService.ScreenReceiver*/
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-
+    private lateinit var notificationView: RemoteViews
 
     // Canvas
     private lateinit var spectogramview: CanvasSpectogram
@@ -44,6 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         registerButtonOnCheckedCallback()
 
+        registerNotificationButtons()
         sendNotification()
     }
 
@@ -87,27 +93,36 @@ class MainActivity : AppCompatActivity() {
     private val NOTIFICATION_ID_STRING = "My Notifications"
     private lateinit var mNotifyManager : NotificationManager //  = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-    /*class RemoteControlReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (action.equalsIgnoreCase("com.example.test.ACTION_PLAY")) {
-                if (mediaplayer.isPlaying()) {
-                    mediaplayer.pause()
-                    notification_view.setImageViewResource(R.id.button1, R.drawable.play)
-                    notification.contentView = notificationView
-                    notificationManager.notify(1, notification)
-                } else {
-                    mediaplayer.start()
-                    notificationView.setImageViewResource(R.id.button1, R.drawable.pause)
-                    notification.contentView = notificationView
-                    notificationManager.notify(1, notification)
+    private fun registerNotificationButtons()
+    {
+        notificationView = RemoteViews(packageName, R.layout.notification_view)
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if ( intent.action.equals("com.example.comfortnoise.ACTION_PLAY")){
+                    audioService.continuePlaying()
+                }else if( intent.action.equals("com.example.comfortnoise.ACTION_PAUSE")) {
+                    audioService.pausePlaying()
                 }
             }
         }
-    }*/
+
+        class NotificationButtons(val viewId: Int, val action: String)
+        val buttons: Array<NotificationButtons> = arrayOf(
+            NotificationButtons(R.id.notificationPlay,"com.example.comfortnoise.ACTION_PLAY"),
+            NotificationButtons(R.id.notificationPause,"com.example.comfortnoise.ACTION_PAUSE"),
+        )
+        for (button in buttons) {
+            registerReceiver(receiver, IntentFilter(button.action))
+            val switchIntent = Intent(button.action)
+            val pendingSwitchIntent =
+                PendingIntent.getBroadcast(this, 0, switchIntent, PendingIntent.FLAG_IMMUTABLE)
+            notificationView.setOnClickPendingIntent(button.viewId, pendingSwitchIntent)
+        }
+    }
     private fun sendNotification() {
         mNotifyManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         // Erstelle eine RemoteViews-Instanz mit dem Layout deiner benutzerdefinierten Ansicht
-        val notification_view = RemoteViews(packageName, R.layout.notification_view)
+        // val notification_view = RemoteViews(packageName, R.layout.notification_view)
 
         //Create the channel. Android will automatically check if the channel already exists
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -117,7 +132,6 @@ class MainActivity : AppCompatActivity() {
                 NotificationManager.IMPORTANCE_DEFAULT
             )
             channel.description = "My notification channel description"
-            channel.setSound(null,null)
             mNotifyManager.createNotificationChannel(channel)
         }
         val notifyBuilder: NotificationCompat.Builder =
@@ -125,8 +139,9 @@ class MainActivity : AppCompatActivity() {
                 .setContentTitle("You've been notified!")
                 .setContentText("This is your notification text.")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setCustomContentView(notification_view)
-                //.setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCustomContentView(notificationView)
+                .setSilent(true)
+        //.setPriority(NotificationCompat.PRIORITY_HIGH)
         val myNotification = notifyBuilder.build()
         mNotifyManager.notify(NOTIFICATION_ID, myNotification)
     }
