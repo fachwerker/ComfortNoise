@@ -1,8 +1,14 @@
 package com.example.comfortnoise
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioRecord
 import android.media.AudioTrack
+import android.media.MediaRecorder
+import androidx.core.app.ActivityCompat
 import java.io.InputStream
 import java.util.Random
 
@@ -38,31 +44,15 @@ class AudioService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver
     var doUpdateView: Boolean = true
     val Fs: Int = SAMPLING_FREQUENCY
     //val buffLength: Int = AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
-    var noiseLength: Int = Fs*1 // 5s
+    var noiseLength: Int = Fs*1 // 1s
+    var microphoneSignalLength: Int = Fs*1 // 1s
     val buffLength: Int = 4096//AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
 
     // fft
     val WS = WINDOW_SIZE //  WS = window size
-    lateinit var signalServiceObj: SignalService
-    init {
+    private var signalServiceObj: SignalService = SignalService(WS, OVERLAP_FACTOR)
 
-        signalServiceObj = SignalService(WS, OVERLAP_FACTOR)
-    }
-
-    fun startAudioThread(audioFileStream: InputStream)
-    {
-        val signal = readWavfile(audioFileStream)
-        Thread {
-            initTrack()
-            startPlaying()
-            if (signal != null) {
-                playback(signal)
-            }
-        }.start()
-    }
-
-
-    private fun readWavfile(inputStream: InputStream): DoubleArray? {
+    private fun readWavFile(inputStream: InputStream): DoubleArray? {
 
         try {
             val `in` = inputStream
@@ -128,7 +118,7 @@ class AudioService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver
         while (isPlaying) {
             if (!isPause) {
                 if (doUpdateView) {
-                    val frameOut: ShortArray = ShortArray(buffLength)
+                    val frameOut = ShortArray(buffLength)
                     for (i in 0 until buffLength) {
                         frameOut[i] = signal[idxNoise % noiseLength].toInt().toShort()
                         idxNoise++
@@ -156,6 +146,83 @@ class AudioService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver
         }
     }
 
+    private var ar: AudioRecord? = null
+    private var minSize = 0
+
+    private fun startRecording(context: Context) {
+        minSize = AudioRecord.getMinBufferSize(
+            Fs,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT
+        )
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        ar = AudioRecord(
+            MediaRecorder.AudioSource.MIC,
+            Fs,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+            minSize
+        )
+        ar!!.startRecording()
+        isRecording = true
+    }
+    private fun analyzeMicrophone()
+    {
+        val windowSize = 4096
+        /*var signal = DoubleArray(minSize*OVERLAP_FACTOR)
+        val buffer = ShortArray(minSize)*/
+        val signal = DoubleArray(windowSize*OVERLAP_FACTOR)
+        val buffer = ShortArray(windowSize)
+
+        while (isRecording) {
+            // recorder!!.read(buffer, 0, windowSize)
+            ar!!.read(buffer, 0, windowSize)
+            signal.copyInto(signal,0, windowSize,windowSize*OVERLAP_FACTOR-1)
+            for (i in 0 until windowSize/*minSize*/) {
+                signal[i+windowSize] = buffer[i].toDouble()
+            }
+            val plotData = signalServiceObj.getSpectrogram(signal)
+            for (i in 0 until OVERLAP_FACTOR) {
+                _spectogramView.drawSpectogram(plotData[i])
+            }
+        }
+    }
+
+
+    var isRecording = false
+    fun startMicrophoneThread(context: Context)
+    {
+        Thread {
+            startRecording(context)
+            analyzeMicrophone()
+        }.start()
+    }
+
+    fun startAudioThread(audioFileStream: InputStream)
+    {
+        val signal = readWavFile(audioFileStream)
+        Thread {
+            initTrack()
+            startPlaying()
+            if (signal != null) {
+                playback(signal)
+            }
+        }.start()
+    }
+
     fun pausePlaying() {
         isPause = true
     }
@@ -169,6 +236,7 @@ class AudioService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver
     }
 
     fun stopPlaying() {
+        isRecording = false
         if (isPlaying) {
             isPlaying = false
             // Stop playing the audio data and release the resources
@@ -176,6 +244,7 @@ class AudioService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver
             Track.release()
         }
     }
+
     private fun generateRandomSignal(sampleSize: Int): DoubleArray {
         val random = Random()
 
