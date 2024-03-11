@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/playNoise"
+        android:enabled="true"
+        android:title="Play Noise"/>
+    <item
+        android:id="@+id/recordMic"
+        android:enabled="true"
+        android:title="Record Mic"/>
+</menu>

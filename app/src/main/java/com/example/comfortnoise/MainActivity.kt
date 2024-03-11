@@ -13,11 +13,17 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.MenuItem
 import android.widget.CompoundButton
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
+import androidx.fragment.app.Fragment
 import com.example.comfortnoise.databinding.ActivityMainBinding
+import com.example.comfortnoise.databinding.FragmentNoiseBinding
+import com.example.comfortnoise.databinding.FragmentRecordMicBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationBarView
 
 
 /*import android.content.Intent
@@ -28,6 +34,8 @@ import com.example.comfortnoise.AudioService.ScreenReceiver*/
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var bindingNoise: FragmentNoiseBinding
+    private lateinit var bindingMicFragment: FragmentRecordMicBinding
     private lateinit var notificationView: RemoteViews
 
     // Canvas
@@ -42,8 +50,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-        spectogramview = binding.myCanvas
+        //spectogramview = binding.myCanvas
         setContentView(binding.root)
+
+        // bindingNoise = FragmentNoiseBinding.inflate(layoutInflater)
+        bindingMicFragment = FragmentRecordMicBinding.inflate(layoutInflater)
+        spectogramview = bindingMicFragment.myCanvas
+        //setContentView(bindingNoise.root)
 
         // Screen_on/off was replaced by overwrite of event onPause/onResume
         /*val intentFilter = IntentFilter(Intent.ACTION_SCREEN_ON)
@@ -52,52 +65,52 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(mReceiver, intentFilter)*/
         audioService = AudioService(spectogramview/*, mReceiver!!*/)
 
+
         registerButtonOnCheckedCallback()
 
         registerNotificationButtons()
         sendNotification()
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        //bottomNav.setOnNavigationItemSelectedListener(navListener)
+        bottomNav.setOnItemSelectedListener(navListener)
+
+        // as soon as the application opens the first fragment should
+        // be shown to the user in this case it is algorithm fragment
+        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, PlayNoiseFragment()).commit()
+    }
+
+
+    private val navListener = NavigationBarView.OnItemSelectedListener{ item: MenuItem ->
+        // By using switch we can easily get
+        // the selected fragment
+        // by using there id.
+        var selectedFragment: Fragment? = null
+        val itemId = item.itemId
+        if (itemId == R.id.playNoise) {
+            selectedFragment = PlayNoiseFragment()
+        } else if (itemId == R.id.recordMic) {
+            selectedFragment = RecordMicFragment()
+        }
+        // It will help to replace the
+        // one fragment to other.
+        if (selectedFragment != null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, selectedFragment).commit()
+        }
+        true
     }
 
     lateinit var am: AudioManager
     private fun registerButtonOnCheckedCallback()
     {
 
-        class Buttons(val button: android.widget.ToggleButton,val filename: String)
-        val buttons: Array<Buttons> = arrayOf(
-            Buttons(binding.blueNoise,"blue_noise"),
-            Buttons(binding.brownNoise,"brown_noise"),
-            Buttons(binding.greyNoise,"grey_noise_itu468"),
-            Buttons(binding.sineSweep,"sine_sweep"),
-            Buttons(binding.WhiteNoise,"white_noise_short"),
-            Buttons(binding.PinkNoise,"pink_noise"),
-        )
-        for (button in buttons)
-        {
-            button.button.setBackgroundResource(android.R.drawable.btn_default)
-            button.button.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
-                if (isChecked) {
-                    audioService.stopPlaying()
-                    for (button in buttons)
-                    {
-                        button.button.setBackgroundResource(android.R.drawable.btn_default)
-                    }
-                    compoundButton.setBackgroundColor(Color.GREEN)
-                    val resId = resources.getIdentifier(button.filename, "raw", packageName)
-                    audioService.startAudioThread(resources.openRawResource(resId))
-                } else {
-                    compoundButton.setBackgroundResource(android.R.drawable.btn_default);
-                    audioService.stopPlaying()
-                }
-            }
-        }
-
-        binding.microphone.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
+        bindingMicFragment.microphone.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
             if (isChecked) {
                 audioService.stopPlaying()
-                for (button in buttons)
+                /*for (button in buttons)
                 {
                     button.button.setBackgroundResource(android.R.drawable.btn_default)
-                }
+                }*/
                 compoundButton.setBackgroundColor(Color.GREEN)
 
                 audioService.startMicrophoneThread(this)
@@ -109,13 +122,13 @@ class MainActivity : AppCompatActivity() {
 
         am = getSystemService(AUDIO_SERVICE) as AudioManager
 
-        binding.bluetoothMic.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
+        bindingMicFragment.bluetoothMic.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
             if (isChecked) {
                 audioService.stopPlaying()
-                for (button in buttons)
+                /*for (button in buttons)
                 {
                     button.button.setBackgroundResource(android.R.drawable.btn_default)
-                }
+                }*/
                 compoundButton.setBackgroundColor(Color.GREEN)
 
 
@@ -215,7 +228,6 @@ class MainActivity : AppCompatActivity() {
         audioService.stopPlaying()
 
         super.onDestroy()
-
     }
 
 }

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PlayNoiseFragment">
+
+    <com.example.comfortnoise.CanvasSpectogram
+        android:id="@+id/canvasNoise"
+        android:layout_width="384dp"
+        android:layout_height="403dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <com.example.comfortnoise.CanvasLabels
+        android:id="@+id/myCanvasLabels"
+        android:layout_width="30dp"
+        android:layout_height="406dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ToggleButton
+        android:id="@+id/white_noise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="4dp"
+        android:text="ToggleButton"
+        android:textAllCaps="false"
+        android:textOff="white_noise"
+        android:textOn="white_noise"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation_fake"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+    <ToggleButton
+        android:id="@+id/blue_noise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ToggleButton"
+        android:textAllCaps="false"
+        android:textOff="blue_noise"
+        android:textOn="blue_noise"
+        app:layout_constraintBottom_toTopOf="@+id/grey_noise"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/pink_noise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="pink_noise"
+        android:textOff="pink_noise"
+        android:textOn="pink_noise"
+        app:layout_constraintBottom_toTopOf="@+id/white_noise"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/brown_noise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="64dp"
+        android:text="ToggleButton"
+        android:textAllCaps="false"
+        android:textOff="brown_noise"
+        android:textOn="brown_noise"
+        app:layout_constraintBottom_toTopOf="@+id/sine_sweep"
+        app:layout_constraintEnd_toStartOf="@+id/pink_noise"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/blue_noise" />
+
+    <ToggleButton
+        android:id="@+id/grey_noise"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="grey_noise"
+        android:textAllCaps="false"
+        android:textOff="grey_noise"
+        android:textOn="grey_noise"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation_fake"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/sine_sweep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="sine_sweep"
+        android:textAllCaps="false"
+        android:textOff="sine_sweep"
+        android:textOn="sine_sweep"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation_fake"
+        app:layout_constraintEnd_toStartOf="@+id/white_noise"
+        app:layout_constraintHorizontal_bias="0.583"
+        app:layout_constraintStart_toEndOf="@+id/grey_noise" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation_fake"
+        android:layout_width="417dp"
+        android:layout_height="51dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_navigation_menu" />
+</androidx.constraintlayout.widget.ConstraintLayout>
