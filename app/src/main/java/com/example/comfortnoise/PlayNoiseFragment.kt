@@ -8,11 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.ToggleButton
-import com.example.comfortnoise.databinding.FragmentNoiseBinding
 
 class PlayNoiseFragment : Fragment() {
     private lateinit var spectogramview: CanvasSpectogram
-    private lateinit var audioService: AudioService
+    private lateinit var audioService: PlayService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +29,7 @@ class PlayNoiseFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         spectogramview = view.findViewById(R.id.canvasNoise)
-        audioService = AudioService(spectogramview/*, mReceiver!!*/)
+        audioService = PlayService(spectogramview/*, mReceiver!!*/)
 
         registerButtonOnCheckedCallback()
     }

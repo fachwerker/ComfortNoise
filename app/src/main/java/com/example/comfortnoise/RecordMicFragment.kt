@@ -18,7 +18,7 @@ import android.widget.ToggleButton
 
 class RecordMicFragment : Fragment() {
     private lateinit var spectogramview: CanvasSpectogram
-    private lateinit var audioService: AudioService
+    private lateinit var recordService: RecordService
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -35,29 +35,31 @@ class RecordMicFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         spectogramview = view.findViewById(R.id.canvasMic)
-        audioService = AudioService(spectogramview/*, mReceiver!!*/)
+        recordService = RecordService(spectogramview/*, mReceiver!!*/)
 
         registerButtonOnCheckedCallback()
     }
+    lateinit var micButton: ToggleButton
+    lateinit var btcMicButton: ToggleButton
 
     lateinit var am: AudioManager
     private fun registerButtonOnCheckedCallback()
     {
-        val micButton = view?.findViewById<ToggleButton>(R.id.microphone)
-        val btcMicButton = view?.findViewById<ToggleButton>(R.id.bluetoothMic)
+        micButton = view?.findViewById<ToggleButton>(R.id.microphone)!!
+        btcMicButton = view?.findViewById<ToggleButton>(R.id.bluetoothMic)!!
 
         micButton?.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
             if (isChecked) {
-                audioService.stopPlaying()
-                btcMicButton?.setBackgroundResource(android.R.drawable.btn_default)
+                recordService.stopRecording()
+                btcMicButton.setBackgroundResource(android.R.drawable.btn_default)
                 micButton.setBackgroundResource(android.R.drawable.btn_default)
 
                 compoundButton.setBackgroundColor(Color.GREEN)
 
-                this.context?.let { audioService.startMicrophoneThread(it) }
+                this.context?.let { recordService.startMicrophoneThread(it) }
             } else {
                 compoundButton.setBackgroundResource(android.R.drawable.btn_default);
-                audioService.stopPlaying()
+                recordService.stopRecording()
             }
         }
         am = requireActivity().getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -65,9 +67,9 @@ class RecordMicFragment : Fragment() {
 
         btcMicButton?.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
             if (isChecked) {
-                audioService.stopPlaying()
+                recordService.stopRecording()
                 btcMicButton.setBackgroundResource(android.R.drawable.btn_default)
-                micButton?.setBackgroundResource(android.R.drawable.btn_default)
+                micButton.setBackgroundResource(android.R.drawable.btn_default)
                 compoundButton.setBackgroundColor(Color.GREEN)
 
 
@@ -76,7 +78,7 @@ class RecordMicFragment : Fragment() {
                         val state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1)
                         Log.d(ContentValues.TAG, "Audio SCO state: $state")
                         if (AudioManager.SCO_AUDIO_STATE_CONNECTED == state) {
-                            audioService.startMicrophoneThread(context)
+                            recordService.startMicrophoneThread(context)
                             activity?.unregisterReceiver(this)
                         }
                     }
@@ -86,7 +88,7 @@ class RecordMicFragment : Fragment() {
                 am.startBluetoothSco()
             } else {
                 compoundButton.setBackgroundResource(android.R.drawable.btn_default);
-                audioService.stopPlaying()
+                recordService.stopRecording()
 
                 am.stopBluetoothSco()
             }
@@ -94,17 +96,17 @@ class RecordMicFragment : Fragment() {
     }
 
     override fun onPause() {
-        audioService.onPause()
+        recordService.onPause()
         super.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        audioService.onResume()
+        recordService.onResume()
     }
 
     override fun onDestroy() {
-        audioService.stopPlaying()
+        recordService.stopRecording()
         super.onDestroy()
     }
 

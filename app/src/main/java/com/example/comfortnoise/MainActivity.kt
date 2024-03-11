@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var notificationView: RemoteViews
 
-    private lateinit var audioService: AudioService
+    private lateinit var audioService: PlayService
 
     // private var mReceiver: ScreenReceiver? = null
 
