@@ -4,42 +4,25 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
-import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
-import android.widget.CompoundButton
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import com.example.comfortnoise.databinding.ActivityMainBinding
-import com.example.comfortnoise.databinding.FragmentNoiseBinding
-import com.example.comfortnoise.databinding.FragmentRecordMicBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
-
-
-/*import android.content.Intent
-import android.content.IntentFilter
-import com.example.comfortnoise.AudioService.ScreenReceiver*/
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var bindingNoise: FragmentNoiseBinding
-    private lateinit var bindingMicFragment: FragmentRecordMicBinding
     private lateinit var notificationView: RemoteViews
-
-    // Canvas
-    private lateinit var spectogramview: CanvasSpectogram
 
     private lateinit var audioService: AudioService
 
@@ -50,23 +33,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
-        //spectogramview = binding.myCanvas
         setContentView(binding.root)
-
-        // bindingNoise = FragmentNoiseBinding.inflate(layoutInflater)
-        bindingMicFragment = FragmentRecordMicBinding.inflate(layoutInflater)
-        spectogramview = bindingMicFragment.myCanvas
-        //setContentView(bindingNoise.root)
-
-        // Screen_on/off was replaced by overwrite of event onPause/onResume
-        /*val intentFilter = IntentFilter(Intent.ACTION_SCREEN_ON)
-        intentFilter.addAction(Intent.ACTION_SCREEN_OFF)
-        mReceiver = ScreenReceiver()
-        registerReceiver(mReceiver, intentFilter)*/
-        audioService = AudioService(spectogramview/*, mReceiver!!*/)
-
-
-        registerButtonOnCheckedCallback()
 
         registerNotificationButtons()
         sendNotification()
@@ -98,61 +65,6 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.fragment_container, selectedFragment).commit()
         }
         true
-    }
-
-    lateinit var am: AudioManager
-    private fun registerButtonOnCheckedCallback()
-    {
-
-        bindingMicFragment.microphone.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
-            if (isChecked) {
-                audioService.stopPlaying()
-                /*for (button in buttons)
-                {
-                    button.button.setBackgroundResource(android.R.drawable.btn_default)
-                }*/
-                compoundButton.setBackgroundColor(Color.GREEN)
-
-                audioService.startMicrophoneThread(this)
-            } else {
-                compoundButton.setBackgroundResource(android.R.drawable.btn_default);
-                audioService.stopPlaying()
-            }
-        }
-
-        am = getSystemService(AUDIO_SERVICE) as AudioManager
-
-        bindingMicFragment.bluetoothMic.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
-            if (isChecked) {
-                audioService.stopPlaying()
-                /*for (button in buttons)
-                {
-                    button.button.setBackgroundResource(android.R.drawable.btn_default)
-                }*/
-                compoundButton.setBackgroundColor(Color.GREEN)
-
-
-                registerReceiver(object : BroadcastReceiver() {
-                    override fun onReceive(context: Context, intent: Intent) {
-                        val state = intent.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1)
-                        Log.d(TAG, "Audio SCO state: $state")
-                        if (AudioManager.SCO_AUDIO_STATE_CONNECTED == state) {
-                            audioService.startMicrophoneThread(context)
-                            unregisterReceiver(this)
-                        }
-                    }
-                }, IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED ))
-
-                Log.d(TAG, "starting bluetooth")
-                am.startBluetoothSco()
-            } else {
-                compoundButton.setBackgroundResource(android.R.drawable.btn_default);
-                audioService.stopPlaying()
-
-                am.stopBluetoothSco()
-            }
-        }
-
     }
 
     // This ID can be the value you want.
@@ -211,23 +123,4 @@ class MainActivity : AppCompatActivity() {
         val myNotification = notifyBuilder.build()
         mNotifyManager.notify(NOTIFICATION_ID, myNotification)
     }
-
-    override fun onPause() {
-        audioService.onPause()
-        super.onPause()
-    }
-
-
-    override fun onResume() {
-        super.onResume()
-        audioService.onResume()
-    }
-
-
-    override fun onDestroy() {
-        audioService.stopPlaying()
-
-        super.onDestroy()
-    }
-
 }

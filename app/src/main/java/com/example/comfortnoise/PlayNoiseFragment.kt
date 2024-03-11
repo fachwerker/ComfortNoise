@@ -11,15 +11,11 @@ import android.widget.ToggleButton
 import com.example.comfortnoise.databinding.FragmentNoiseBinding
 
 class PlayNoiseFragment : Fragment() {
-    private lateinit var bindingNoise: FragmentNoiseBinding
     private lateinit var spectogramview: CanvasSpectogram
     private lateinit var audioService: AudioService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        bindingNoise = FragmentNoiseBinding.inflate(layoutInflater)
-        spectogramview = bindingNoise.canvasNoise
-
     }
 
     override fun onCreateView(
@@ -65,7 +61,7 @@ class PlayNoiseFragment : Fragment() {
                     val resId = resources.getIdentifier(
                         toggleButton.filename,
                         "raw",
-                        requireActivity().packageName /*"com.example.comfortnoise"*//*packageName*/
+                        requireActivity().packageName
                     )
                     audioService.startAudioThread(resources.openRawResource(resId))
                 } else {

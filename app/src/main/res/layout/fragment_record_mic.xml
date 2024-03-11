@@ -7,7 +7,7 @@
     tools:context=".RecordMicFragment">
 
     <com.example.comfortnoise.CanvasSpectogram
-        android:id="@+id/myCanvas"
+        android:id="@+id/canvasMic"
         android:layout_width="384dp"
         android:layout_height="403dp"
         app:layout_constraintStart_toStartOf="parent"
