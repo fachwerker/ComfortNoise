@@ -18,12 +18,11 @@ class CanvasSpectogram @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    private val paint_ = Paint()
+    private val paint = Paint()
     private lateinit var mCanvas : Canvas
     val nY = WINDOW_SIZE/2 + 1
     val nX = width
     var invalidateCounter = 0
-    lateinit var bitmap : Bitmap
 
     // TODO: check if Array of ints could be used
     //private lateinit var colorsArray: Array<Array<Int>>
@@ -37,13 +36,13 @@ class CanvasSpectogram @JvmOverloads constructor(
             val xfloat = x.toFloat()
             val rowArray = colorsArray[x]
 
-            paint_.shader = LinearGradient(
+            paint.shader = LinearGradient(
                 xfloat, 0f, xfloat, height.toFloat(),
                 rowArray,
                 colorsPositionArray, // distribution of colors along the length of gradient.
                 Shader.TileMode.CLAMP
             )
-            mCanvas.drawLine(xfloat, 0f, xfloat, height.toFloat(), paint_)
+            mCanvas.drawLine(xfloat, 0f, xfloat, height.toFloat(), paint)
 
         }
     }

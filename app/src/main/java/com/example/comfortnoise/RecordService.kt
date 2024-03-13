@@ -12,7 +12,7 @@ class RecordService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceive
 
     private var _spectogramView: CanvasSpectogram = spectogramView
     var doUpdateView: Boolean = true
-    val Fs: Int = SAMPLING_FREQUENCY
+    val Fs: Int = 20000
 
     // fft
     val WS = WINDOW_SIZE //  WS = window size
@@ -69,7 +69,7 @@ class RecordService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceive
             for (i in 0 until windowSize/*minSize*/) {
                 signal[i+windowSize] = buffer[i].toDouble()
             }
-            val plotData = signalServiceObj.getSpectrogram(signal)
+            val plotData = signalServiceObj.getSpectrogram(signal, 120.0)
             for (i in 0 until OVERLAP_FACTOR) {
                 _spectogramView.drawSpectogram(plotData[i])
             }

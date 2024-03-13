@@ -15,7 +15,7 @@ class PlayService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver*
     var isPlaying: Boolean = false
     var isPause: Boolean = false
     var doUpdateView: Boolean = true
-    val Fs: Int = SAMPLING_FREQUENCY
+    val Fs: Int = 44100
     var noiseLength: Int = Fs*1 // 1s
     val buffLength: Int = 4096//AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
 

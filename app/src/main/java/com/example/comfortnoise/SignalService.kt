@@ -14,7 +14,6 @@ class SignalService(private val fftsize: Int, private val overlap_factor: Int)  
     private lateinit var cos: DoubleArray
     private lateinit var sin: DoubleArray
 
-
     init {
         val n = windowSize
         m = (ln(n.toDouble()) / ln(2.0)).toInt()
@@ -31,7 +30,7 @@ class SignalService(private val fftsize: Int, private val overlap_factor: Int)  
         }
     }
 
-    fun getSpectrogram(signal: DoubleArray): Array<DoubleArray> {
+    fun getSpectrogram(signal: DoubleArray, maximumLevel: Double = Double.MIN_VALUE): Array<DoubleArray> {
 
         val rawData: DoubleArray = signal
         val length = signal.size // this is actually the size of the whole array
@@ -48,7 +47,7 @@ class SignalService(private val fftsize: Int, private val overlap_factor: Int)  
             )
         }
         //apply FFT and find MAX and MIN amplitudes
-        var maxAmp = Double.MIN_VALUE
+        var maxAmp = maximumLevel
         var minAmp = Double.MAX_VALUE
         for (i in 0 until nX) {
             val imaginaryPart = DoubleArray(windowSize) { 0.0 } // signal is real
@@ -71,7 +70,9 @@ class SignalService(private val fftsize: Int, private val overlap_factor: Int)  
                 // select threshold based on the expected spectrum amplitudes
                 val threshold = 1.0
                 // limit values and convert to dB
-                val valueDb = 10 * log10(Math.max(power, threshold))
+                var valueDb = 10 * log10(Math.max(power, threshold))
+                if (maximumLevel>Double.MIN_VALUE)
+                    valueDb = Math.min(valueDb, maximumLevel) // limit to maximum
                 plotData[i][nY-j-1] = valueDb
 
                 //find MAX and MIN amplitude

@@ -13,8 +13,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.example.comfortnoise.CanvasLabels
-        android:id="@+id/myCanvasLabels"
+    <com.example.comfortnoise.RecordMicLabels
+        android:id="@+id/canvasLabelsMic"
         android:layout_width="30dp"
         android:layout_height="406dp"
         app:layout_constraintEnd_toEndOf="parent"

@@ -8,10 +8,12 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 
-class CanvasLabels @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : View(context, attrs, defStyleAttr) {
+class RecordMicLabels @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : View(context, attrs, defStyleAttr) {
+
+    private val paint = Paint()
     override fun onDraw(canvas: Canvas) {
+
         super.onDraw(canvas)
-        val paint = Paint()
         paint.textSize = 25f
         val nightModeFlags = context.resources.configuration.uiMode and
                 Configuration.UI_MODE_NIGHT_MASK
@@ -28,16 +30,15 @@ class CanvasLabels @JvmOverloads constructor(context: Context, attrs: AttributeS
 
         class Label(val textlabel: String,val ypos: Float)
         val labels: Array<Label> = arrayOf(
-            Label("20",height*2/22f),
-            Label("18",height*4/22f),
-            Label("16",height*6/22f),
-            Label("14",height*8/22f),
-            Label("12",height*10/22f),
-            Label("10",height*12/22f),
-            Label("8",height*14/22f),
-            Label("6",height*16/22f),
-            Label("4",height*18/22f),
-            Label("2",height*20/22f),
+            Label("9",height*1/10f),
+            Label("8",height*2/10f),
+            Label("7",height*3/10f),
+            Label("6",height*4/10f),
+            Label("5",height*5/10f),
+            Label("4",height*6/10f),
+            Label("3",height*7/10f),
+            Label("2",height*8/10f),
+            Label("1",height*9/10f),
         )
         for (label in labels) {
             canvas.drawLine(0f, label.ypos, 10f, label.ypos, paint)
