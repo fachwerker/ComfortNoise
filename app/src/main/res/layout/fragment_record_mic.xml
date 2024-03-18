@@ -6,25 +6,54 @@
     android:layout_height="match_parent"
     tools:context=".RecordMicFragment">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" />
+
     <com.example.comfortnoise.CanvasSpectogram
         android:id="@+id/canvasMic"
-        android:layout_width="384dp"
-        android:layout_height="403dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="@+id/guideline"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toStartOf="@+id/canvasLabelsMic"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <com.example.comfortnoise.CanvasSpectogram
+        android:id="@+id/canvasMicLeft"
+        android:layout_width="217dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.855"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/guideline"
+        app:layout_constraintVertical_bias="0.0" />
 
     <com.example.comfortnoise.RecordMicLabels
         android:id="@+id/canvasLabelsMic"
-        android:layout_width="30dp"
-        android:layout_height="406dp"
+        android:layout_width="28dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.example.comfortnoise.RecordMicLabels
+        android:id="@+id/canvasLabelsMic2"
+        android:layout_width="28dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/guideline"/>
 
     <ToggleButton
         android:id="@+id/microphone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="8dp"
         android:text="mic"
         android:textOff="mic"
         android:textOn="mic"
@@ -35,6 +64,19 @@
         android:id="@+id/bluetoothMic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:text="btc_mic"
+        android:textOff="btc_mic"
+        android:textOn="btc_mic"
+        app:layout_constraintBottom_toTopOf="@+id/bluetoothMic2"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/bluetoothMic2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="8dp"
         android:text="btc_mic"
         android:textOff="btc_mic"
         android:textOn="btc_mic"
