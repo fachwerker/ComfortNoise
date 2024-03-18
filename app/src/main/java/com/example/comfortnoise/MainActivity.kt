@@ -15,6 +15,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import com.example.comfortnoise.databinding.ActivityMainBinding
+import com.example.comfortnoise.play.PlayNoiseFragment
+import com.example.comfortnoise.play.PlayService
+import com.example.comfortnoise.record.RecordMicFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 

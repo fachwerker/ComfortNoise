@@ -1,4 +1,4 @@
-package com.example.comfortnoise
+package com.example.comfortnoise.record
 
 import android.content.BroadcastReceiver
 import android.content.ContentValues
@@ -15,6 +15,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.ToggleButton
+import com.example.comfortnoise.CanvasSpectogram
+import com.example.comfortnoise.R
 
 class RecordMicFragment : Fragment() {
     private lateinit var spectogramview: CanvasSpectogram

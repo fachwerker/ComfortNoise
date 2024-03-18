@@ -1,4 +1,4 @@
-package com.example.comfortnoise
+package com.example.comfortnoise.record
 
 import android.Manifest
 import android.content.Context
@@ -7,6 +7,10 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import androidx.core.app.ActivityCompat
+import com.example.comfortnoise.CanvasSpectogram
+import com.example.comfortnoise.OVERLAP_FACTOR
+import com.example.comfortnoise.SignalService
+import com.example.comfortnoise.WINDOW_SIZE
 
 class RecordService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceiver*/) {
 
@@ -59,13 +63,13 @@ class RecordService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceive
         val windowSize = 4096
         /*var signal = DoubleArray(minSize*OVERLAP_FACTOR)
         val buffer = ShortArray(minSize)*/
-        val signal = DoubleArray(windowSize*OVERLAP_FACTOR)
+        val signal = DoubleArray(windowSize* OVERLAP_FACTOR)
         val buffer = ShortArray(windowSize)
 
         while (isRecording) {
             // recorder!!.read(buffer, 0, windowSize)
             ar!!.read(buffer, 0, windowSize)
-            signal.copyInto(signal,0, windowSize,windowSize*OVERLAP_FACTOR-1)
+            signal.copyInto(signal,0, windowSize,windowSize* OVERLAP_FACTOR -1)
             for (i in 0 until windowSize/*minSize*/) {
                 signal[i+windowSize] = buffer[i].toDouble()
             }

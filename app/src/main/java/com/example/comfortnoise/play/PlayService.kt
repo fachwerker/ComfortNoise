@@ -1,8 +1,12 @@
-package com.example.comfortnoise
+package com.example.comfortnoise.play
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import com.example.comfortnoise.CanvasSpectogram
+import com.example.comfortnoise.OVERLAP_FACTOR
+import com.example.comfortnoise.SignalService
+import com.example.comfortnoise.WINDOW_SIZE
 import java.io.InputStream
 import java.util.Random
 

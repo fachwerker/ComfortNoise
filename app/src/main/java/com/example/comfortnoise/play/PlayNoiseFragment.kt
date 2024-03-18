@@ -1,4 +1,4 @@
-package com.example.comfortnoise
+package com.example.comfortnoise.play
 
 import android.graphics.Color
 import android.os.Bundle
@@ -8,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.ToggleButton
+import com.example.comfortnoise.CanvasSpectogram
+import com.example.comfortnoise.R
 
 class PlayNoiseFragment : Fragment() {
     private lateinit var spectogramview: CanvasSpectogram
