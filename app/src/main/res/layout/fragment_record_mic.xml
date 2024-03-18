@@ -40,7 +40,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.example.comfortnoise.record.RecordMicLabels
+    <com.example.comfortnoise.record.RecordStereoMicLabels
         android:id="@+id/canvasLabelsMic2"
         android:layout_width="28dp"
         android:layout_height="0dp"
@@ -68,18 +68,18 @@
         android:text="btc_mic"
         android:textOff="btc_mic"
         android:textOn="btc_mic"
-        app:layout_constraintBottom_toTopOf="@+id/bluetoothMic2"
+        app:layout_constraintBottom_toTopOf="@+id/bluetoothMicBleStereo"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ToggleButton
-        android:id="@+id/bluetoothMic2"
+        android:id="@+id/bluetoothMicBleStereo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginBottom="8dp"
-        android:text="btc_mic"
-        android:textOff="btc_mic"
-        android:textOn="btc_mic"
+        android:text="ble_stereo_mic"
+        android:textOff="ble_stereo_mic"
+        android:textOn="ble_stereo_mic"
         app:layout_constraintBottom_toTopOf="@+id/bottom_navigation_fake"
         app:layout_constraintStart_toStartOf="parent" />
 

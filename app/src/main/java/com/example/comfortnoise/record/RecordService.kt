@@ -58,6 +58,42 @@ class RecordService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceive
         ar!!.startRecording()
         isRecording = true
     }
+
+    private fun startBleAudioRecording(context: Context, channelMask: Int) {
+        minSize = AudioRecord.getMinBufferSize(
+            Fs,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT
+        )
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            /*ActivityCompat.requestPermissions(context.act,
+                arrayOf(Manifest.permission.RECORD_AUDIO)
+            )*/
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        val ar =
+        AudioRecord.Builder()
+            .setAudioSource(MediaRecorder.AudioSource.MIC)
+            .setAudioFormat(AudioFormat.Builder()
+                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                .setSampleRate(32000)
+                .setChannelMask(channelMask)
+                .build())
+            .setBufferSizeInBytes(2 * minSize)
+            .build()
+        ar!!.startRecording()
+    }
     private fun analyzeMicrophone()
     {
         val windowSize = 4096
@@ -86,6 +122,13 @@ class RecordService(spectogramView: CanvasSpectogram/*, mReceiver: ScreenReceive
     {
         Thread {
             startRecording(context)
+            analyzeMicrophone()
+        }.start()
+    }
+    fun startBleAudioMicrophoneThread(context: Context, channelMask: Int)
+    {
+        Thread {
+            startBleAudioRecording(context, channelMask)
             analyzeMicrophone()
         }.start()
     }

@@ -6,7 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
+import android.media.AudioDeviceInfo
+import android.media.AudioFormat
 import android.media.AudioManager
+import android.media.AudioManager.GET_DEVICES_INPUTS
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -43,12 +46,14 @@ class RecordMicFragment : Fragment() {
     }
     lateinit var micButton: ToggleButton
     lateinit var btcMicButton: ToggleButton
+    lateinit var bleMicStereoButton: ToggleButton
 
-    lateinit var am: AudioManager
+    private lateinit var audioManager: AudioManager
     private fun registerButtonOnCheckedCallback()
     {
         micButton = view?.findViewById<ToggleButton>(R.id.microphone)!!
         btcMicButton = view?.findViewById<ToggleButton>(R.id.bluetoothMic)!!
+        bleMicStereoButton = view?.findViewById<ToggleButton>(R.id.bluetoothMicBleStereo)!!
 
         micButton?.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
             if (isChecked) {
@@ -64,9 +69,8 @@ class RecordMicFragment : Fragment() {
                 recordService.stopRecording()
             }
         }
-        am = requireActivity().getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        // am = getSystemService(Fragment.AUDIO_SERVICE) as AudioManager
 
+        audioManager = requireActivity().getSystemService(Context.AUDIO_SERVICE) as AudioManager
         btcMicButton?.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
             if (isChecked) {
                 recordService.stopRecording()
@@ -87,14 +91,50 @@ class RecordMicFragment : Fragment() {
                 }, IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED ))
 
                 Log.d(ContentValues.TAG, "starting bluetooth")
-                am.startBluetoothSco()
+                audioManager.startBluetoothSco()
             } else {
                 compoundButton.setBackgroundResource(android.R.drawable.btn_default);
                 recordService.stopRecording()
 
-                am.stopBluetoothSco()
+                audioManager.stopBluetoothSco()
             }
         }
+
+        bleMicStereoButton.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
+            if (isChecked) {
+                recordService.stopRecording()
+                btcMicButton.setBackgroundResource(android.R.drawable.btn_default)
+                micButton.setBackgroundResource(android.R.drawable.btn_default)
+                compoundButton.setBackgroundColor(Color.GREEN)
+
+                val allDeviceInfo = audioManager.getDevices(GET_DEVICES_INPUTS)
+                var bleInputDevice: AudioDeviceInfo? = null
+                for (device in allDeviceInfo) {
+                    if (device.type == AudioDeviceInfo.TYPE_BLE_HEADSET) {
+                        bleInputDevice = device
+                        break
+                    }
+                }
+                var channelMask: Int = AudioFormat.CHANNEL_IN_MONO
+                if (bleInputDevice==null){
+                    Log.d(ContentValues.TAG, "no ble audio device found")
+                }else{
+                    bleInputDevice.productName
+                    Log.d(ContentValues.TAG, "ble audio device found " + bleInputDevice.productName )
+                    if (bleInputDevice.channelCounts.size >= 2) {
+                        channelMask = AudioFormat.CHANNEL_IN_STEREO
+                    }
+                    this.context?.let { recordService.startBleAudioMicrophoneThread(it, channelMask) }
+                }
+            } else {
+                compoundButton.setBackgroundResource(android.R.drawable.btn_default);
+                recordService.stopRecording()
+
+                audioManager.stopBluetoothSco()
+            }
+        }
+
+
     }
 
     override fun onPause() {
