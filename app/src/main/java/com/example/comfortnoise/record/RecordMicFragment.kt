@@ -55,7 +55,7 @@ class RecordMicFragment : Fragment() {
         btcMicButton = view?.findViewById<ToggleButton>(R.id.bluetoothMic)!!
         bleMicStereoButton = view?.findViewById<ToggleButton>(R.id.bluetoothMicBleStereo)!!
 
-        micButton?.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
+        micButton.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
             if (isChecked) {
                 recordService.stopRecording()
                 btcMicButton.setBackgroundResource(android.R.drawable.btn_default)
@@ -71,7 +71,7 @@ class RecordMicFragment : Fragment() {
         }
 
         audioManager = requireActivity().getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        btcMicButton?.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
+        btcMicButton.setOnCheckedChangeListener() { compoundButton: CompoundButton, isChecked: Boolean ->
             if (isChecked) {
                 recordService.stopRecording()
                 btcMicButton.setBackgroundResource(android.R.drawable.btn_default)

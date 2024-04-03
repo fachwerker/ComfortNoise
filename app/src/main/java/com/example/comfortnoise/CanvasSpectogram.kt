@@ -1,9 +1,7 @@
 package com.example.comfortnoise
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -12,60 +10,69 @@ import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
 
-import java.util.Arrays
+class CanvasSpectogram : View {
 
-class CanvasSpectogram @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : View(context, attrs, defStyleAttr) {
+    private lateinit var bitmap: Bitmap
+    private lateinit var paint: Paint
 
-    private val paint = Paint()
-    private lateinit var mCanvas : Canvas
+    constructor(context: Context) : super(context) {
+        init()
+    }
+
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        init()
+    }
+
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
+        init()
+    }
     val nY = WINDOW_SIZE/2 + 1
     val nX = width
-    var invalidateCounter = 0
+    private fun init() {
+        paint = Paint()
+    }
 
-    // TODO: check if Array of ints could be used
-    //private lateinit var colorsArray: Array<Array<Int>>
-    private val colorsArray = Array(1074) { IntArray( nY )  }
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+
+        bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+    }
+
+    private val colorsArray = IntArray( nY )
     private val colorsPositionArray = FloatArray( nY ) {i -> i*1f/nY}
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        mCanvas  = canvas
 
-        for (x in 0 until width) {
-            val xfloat = x.toFloat()
-            val rowArray = colorsArray[x]
+        paint.shader = LinearGradient(
+            width.toFloat(), 0f, width.toFloat(), height.toFloat(),
+            colorsArray,
+            colorsPositionArray, // distribution of colors along the length of gradient.
+            Shader.TileMode.CLAMP
+        )
 
-            paint.shader = LinearGradient(
-                xfloat, 0f, xfloat, height.toFloat(),
-                rowArray,
-                colorsPositionArray, // distribution of colors along the length of gradient.
-                Shader.TileMode.CLAMP
-            )
-            mCanvas.drawLine(xfloat, 0f, xfloat, height.toFloat(), paint)
+        val shiftedCanvas = Canvas(bitmap)
+        shiftedCanvas.drawLine(width.toFloat(), 0f, width.toFloat(), height.toFloat(), paint)
+        shiftedCanvas.drawBitmap(bitmap, -1f, 0f, null)
+        canvas.drawBitmap(bitmap, 0f, 0f, null)
 
-        }
+        /* does not work!
+        canvas.drawLine(width.toFloat(), 0f, width.toFloat(), height.toFloat(), paint)
+        canvas.drawBitmap(bitmap, -1f, 0f, null)*/
     }
 
     fun drawSpectogram(frame: DoubleArray){
-        shiftColorsArrayOneIndexLeft()
         updateCurrentColor(frame)
-        if((invalidateCounter%OVERLAP_FACTOR)==0) {
-            invalidate()
-        }
-        invalidateCounter++
-    }
-
-    private fun shiftColorsArrayOneIndexLeft() {
-        for (x in 0 until width - 1) {
-            colorsArray[x] = colorsArray[x + 1].copyOf()
-        }
+        invalidate()
     }
 
     private fun updateCurrentColor(frame: DoubleArray) {
         for (idx in frame.indices) {
             // if value is close to one --> high level --> color == 0 --> red
-            colorsArray[width-1][idx] = getColor((1f - frame[idx].toFloat()))
+            colorsArray[idx] = getColor((1f - frame[idx].toFloat()))
         }
     }
 
@@ -78,7 +85,5 @@ class CanvasSpectogram @JvmOverloads constructor(
 
         return Color.HSVToColor(hsb) // int the resulting argb color
     }
-
-
 }
 

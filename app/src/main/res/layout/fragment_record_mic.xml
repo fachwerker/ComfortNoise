@@ -15,7 +15,7 @@
 
     <com.example.comfortnoise.CanvasSpectogram
         android:id="@+id/canvasMic"
-        android:layout_width="@+id/guideline"
+        android:layout_width="385dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toStartOf="@+id/canvasLabelsMic"
